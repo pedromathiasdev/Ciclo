@@ -76,6 +76,9 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stro
 .leg{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:4px}
 .leg i{display:inline-block;width:18px;height:0;border-top:3px solid var(--azul);vertical-align:middle;margin-right:6px}
 .leg i.pt{border-top-style:dashed}
+.leg i.al{border-top:2px dotted var(--muted)}
+.leg .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.grafico .alvo{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:2 5;fill:none}
 
 /* formulários */
 .form{display:grid;gap:16px;margin-top:12px}
@@ -291,74 +294,95 @@ function escalaY(vals, H, pt, pb) {
   return v => pt + (H - pt - pb) * (hi - v) / (hi - lo);
 }
 
-// Saldo dia a dia do mês: linha cheia = real, tracejada = projeção.
-function graficoDiario(box, rows) {
-  const W = 640, H = 230, pl = 8, pr = 8, pt = 26, pb = 26, n = rows.length;
-  const vals = rows.map(r => num(r.saldo));
-  const y = escalaY(vals, H, pt, pb);
+// Meta de economia: situação de um valor de economia contra a meta (null se não há meta).
+function statusMeta(econ, meta) {
+  if (!(meta > 0)) return null;
+  return econ >= meta ? { ok: true, dif: econ - meta } : { ok: false, dif: meta - econ };
+}
+
+// Linha de economia acumulada. pts: [{ rot, v, proj, texto }]. op.alvo: valores da linha da meta.
+// Linha cheia = real, tracejada = projeção.
+function graficoLinha(box, pts, op) {
+  const W = 640, H = 230, pl = 8, pr = 8, pt = 26, pb = 26, n = pts.length;
+  const vals = pts.map(p => p.v);
+  const alvo = op.alvo || null;
+  const y = escalaY(alvo ? [...vals, ...alvo] : vals, H, pt, pb);
   const x = i => pl + (W - pl - pr) * i / (n - 1);
   const y0 = y(0);
-  const iHoje = rows.reduce((k, r, i) => (r.projetado ? k : i), 0);
+  let iReal = 0;
+  pts.forEach((p, i) => { if (!p.proj) iReal = i; });
   const P = i => `${x(i).toFixed(1)} ${y(vals[i]).toFixed(1)}`;
   const trecho = (a, b) => 'M' + Array.from({ length: b - a + 1 }, (_, k) => P(a + k)).join('L');
   const area = `${trecho(0, n - 1)}L${x(n - 1).toFixed(1)} ${y0.toFixed(1)}L${x(0).toFixed(1)} ${y0.toFixed(1)}Z`;
-  const rot = i => `<text x="${x(i)}" y="${H - 8}" text-anchor="${i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'}">${fmtData(rows[i].dia)}</text>`;
+  const rot = i => `<text x="${x(i)}" y="${H - 8}" text-anchor="${i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'}">${pts[i].rot}</text>`;
+  const linhaAlvo = alvo
+    ? `<path class="alvo" d="M${alvo.map((v, i) => `${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join('L')}" fill="none"/>
+       <text x="${W - pr}" y="${(y(alvo[n - 1]) - 6).toFixed(1)}" text-anchor="end">meta ${brl0(alvo[n - 1])}</text>` : '';
+  const mostrarHoje = op.hoje && iReal < n - 1;
   box.innerHTML = `
-    <svg class="grafico" viewBox="0 0 ${W} ${H}" role="img" aria-label="Saldo diário do mês, real até hoje e projetado depois">
+    <svg class="grafico" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(op.aria)}">
       <defs>
-        <clipPath id="cpd"><rect x="0" y="0" width="${W}" height="${y0}"/></clipPath>
-        <clipPath id="cnd"><rect x="0" y="${y0}" width="${W}" height="${H - y0}"/></clipPath>
+        <clipPath id="cp${op.id}"><rect x="0" y="0" width="${W}" height="${y0}"/></clipPath>
+        <clipPath id="cn${op.id}"><rect x="0" y="${y0}" width="${W}" height="${H - y0}"/></clipPath>
       </defs>
-      <path d="${area}" fill="#1F7A4D" fill-opacity=".14" clip-path="url(#cpd)"/>
-      <path d="${area}" fill="#B3261E" fill-opacity=".2" clip-path="url(#cnd)"/>
+      <path d="${area}" fill="#1F7A4D" fill-opacity=".14" clip-path="url(#cp${op.id})"/>
+      <path d="${area}" fill="#B3261E" fill-opacity=".2" clip-path="url(#cn${op.id})"/>
       <line class="zero" x1="${pl}" x2="${W - pr}" y1="${y0}" y2="${y0}"/>
-      ${iHoje < n - 1 ? `<line class="marca-v" x1="${x(iHoje)}" x2="${x(iHoje)}" y1="${pt - 8}" y2="${H - pb}"/><text x="${x(iHoje) + 4}" y="${pt - 11}">hoje</text>` : ''}
-      <path d="${trecho(0, iHoje)}" fill="none" stroke="#2B59C3" stroke-width="2.6" stroke-linejoin="round"/>
-      ${iHoje < n - 1 ? `<path d="${trecho(iHoje, n - 1)}" fill="none" stroke="#2B59C3" stroke-width="2.6" stroke-dasharray="6 5" stroke-linejoin="round"/>` : ''}
-      <circle class="ponto" r="5" fill="#2B59C3" stroke="#fff" stroke-width="2" cx="${x(iHoje)}" cy="${y(vals[iHoje])}"/>
+      ${linhaAlvo}
+      ${mostrarHoje ? `<line class="marca-v" x1="${x(iReal)}" x2="${x(iReal)}" y1="${pt - 8}" y2="${H - pb}"/><text x="${x(iReal) + 4}" y="${pt - 11}">hoje</text>` : ''}
+      <path d="${trecho(0, iReal)}" fill="none" stroke="#2B59C3" stroke-width="2.6" stroke-linejoin="round"/>
+      ${iReal < n - 1 ? `<path d="${trecho(iReal, n - 1)}" fill="none" stroke="#2B59C3" stroke-width="2.6" stroke-dasharray="6 5" stroke-linejoin="round"/>` : ''}
+      <circle class="ponto" r="5" fill="#2B59C3" stroke="#fff" stroke-width="2" cx="${x(iReal)}" cy="${y(vals[iReal])}"/>
       ${rot(0)}${n > 2 ? rot(Math.floor((n - 1) / 2)) : ''}${rot(n - 1)}
     </svg>
-    <p class="leitura">Hoje: ${brl(vals[iHoje])}</p>
-    <div class="leg"><span><i></i>Real</span><span><i class="pt"></i>Projeção</span></div>`;
+    <p class="leitura">${esc(pts[iReal].texto)}</p>
+    <div class="leg"><span><i></i>Real</span><span><i class="pt"></i>Previsto</span>${alvo ? '<span><i class="al"></i>Meta</span>' : ''}</div>`;
   const svg = $('svg', box), ponto = $('.ponto', box), leitura = $('.leitura', box);
   const mover = ev => {
     const b = svg.getBoundingClientRect();
     const px = (ev.clientX - b.left) / b.width * W;
     const i = Math.max(0, Math.min(n - 1, Math.round((px - pl) / (W - pl - pr) * (n - 1))));
     ponto.setAttribute('cx', x(i)); ponto.setAttribute('cy', y(vals[i]));
-    leitura.textContent = `${fmtData(rows[i].dia)}: ${brl(vals[i])}${rows[i].projetado ? ' (previsto)' : ''}`;
+    leitura.textContent = pts[i].texto;
   };
   svg.addEventListener('pointermove', mover);
   svg.addEventListener('pointerdown', mover);
 }
 
-// Saldo no fim de cada mês do ano: barra cheia = realizado, clara = previsto.
-function graficoAnual(box, rows, ano) {
-  const W = 640, H = 230, pl = 8, pr = 8, pt = 14, pb = 26, n = rows.length;
-  const vals = rows.map(r => num(r.saldo_final));
-  const y = escalaY(vals, H, pt, pb), y0 = y(0);
+// Economia de cada mês do ano. Verde: dentro da meta. Âmbar: abaixo da meta. Vermelho: gastou mais do que ganhou.
+// Barra clara = previsto.
+function graficoBarras(box, rows, ano) {
+  const W = 640, H = 230, pl = 8, pr = 8, pt = 22, pb = 26, n = rows.length;
+  const meta = num(rows[0].meta_economia);
+  const vals = rows.map(r => num(r.economia_mes));
+  const y = escalaY(meta > 0 ? [...vals, meta] : vals, H, pt, pb), y0 = y(0);
   const slot = (W - pl - pr) / n, bw = slot * 0.6;
   const mesAtual = ano === hojeAno() ? agora.getMonth() + 1 : 0;
+  const corDe = v => v < 0 ? '#B3261E' : (meta > 0 && v < meta) ? '#A86F08' : '#1F7A4D';
   const barras = rows.map((r, i) => {
     const v = vals[i], yv = y(v), top = Math.min(y0, yv), h = Math.max(1.5, Math.abs(yv - y0));
-    const cor = v >= 0 ? '#1F7A4D' : '#B3261E';
+    const cor = corDe(v);
     const prev = r.situacao === 'projetado', andamento = r.situacao === 'em_andamento';
     return `<rect x="${(pl + slot * i + (slot - bw) / 2).toFixed(1)}" y="${top.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="3"
       fill="${cor}" fill-opacity="${prev ? .35 : andamento ? .7 : 1}" ${prev ? `stroke="${cor}" stroke-dasharray="4 3"` : ''}/>
       <text x="${(pl + slot * i + slot / 2).toFixed(1)}" y="${H - 8}" text-anchor="middle" ${r.mes === mesAtual ? 'style="font-weight:700;fill:#1B2A32"' : ''}>${MES3[r.mes - 1]}</text>`;
   }).join('');
-  const padrao = rows.findIndex(r => r.mes === mesAtual);
+  const linhaMeta = meta > 0
+    ? `<line class="alvo" x1="${pl}" x2="${W - pr}" y1="${y(meta)}" y2="${y(meta)}"/><text x="${W - pr}" y="${(y(meta) - 6).toFixed(1)}" text-anchor="end">meta ${brl0(meta)}</text>` : '';
   const texto = i => {
     const r = rows[i], sit = r.situacao === 'realizado' ? 'realizado' : r.situacao === 'em_andamento' ? 'em andamento' : 'previsto';
-    return `${cap(MESES[r.mes - 1])} (${sit}): saldo no fim do mês ${brl0(r.saldo_final)}, resultado do mês ${brl0(r.saldo_mes)}`;
+    const st = statusMeta(vals[i], meta);
+    return `${cap(MESES[r.mes - 1])} (${sit}): economia de ${brl0(vals[i])}${st ? (st.ok ? ', dentro da meta' : ', fora da meta') : ''}`;
   };
+  const padrao = rows.findIndex(r => r.mes === mesAtual);
   box.innerHTML = `
-    <svg class="grafico" viewBox="0 0 ${W} ${H}" role="img" aria-label="Saldo previsto no fim de cada mês de ${ano}">
+    <svg class="grafico" viewBox="0 0 ${W} ${H}" role="img" aria-label="Economia prevista em cada mês de ${ano}">
       <line class="zero" x1="${pl}" x2="${W - pr}" y1="${y0}" y2="${y0}"/>
       ${barras}
+      ${linhaMeta}
     </svg>
-    <p class="leitura">${texto(padrao >= 0 ? padrao : n - 1)}</p>
-    <div class="leg"><span>Barra cheia: realizado</span><span>Barra clara: previsto</span></div>`;
+    <p class="leitura">${esc(texto(padrao >= 0 ? padrao : n - 1))}</p>
+    <div class="leg">${meta > 0 ? '<span><b class="sw" style="background:#1F7A4D"></b>Dentro da meta</span><span><b class="sw" style="background:#A86F08"></b>Abaixo da meta</span>' : '<span><b class="sw" style="background:#1F7A4D"></b>Economizou</span>'}<span><b class="sw" style="background:#B3261E"></b>Gastou mais do que ganhou</span><span>Barra clara: previsto</span></div>`;
   const svg = $('svg', box), leitura = $('.leitura', box);
   const mover = ev => {
     const b = svg.getBoundingClientRect();
@@ -369,7 +393,27 @@ function graficoAnual(box, rows, ano) {
   svg.addEventListener('pointerdown', mover);
 }
 
-/* ---------- início: saldo e projeções do mês e do ano ---------- */
+/* ---------- meta de economia mensal (formulário compartilhado) ---------- */
+const htmlFormMeta = atual => `
+  <form class="form form-meta">
+    <label>Quanto você quer economizar por mês <input class="meta-in" inputmode="decimal" placeholder="0,00" value="${atual > 0 ? valorInput(atual) : ''}" required></label>
+    <button class="btn">${atual > 0 ? 'Salvar meta' : 'Definir meta'}</button>
+  </form>`;
+function ligarFormMeta(el) {
+  const f = $('.form-meta', el);
+  if (!f) return;
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const v = parseValor($('.meta-in', f).value);
+    if (!(v >= 0)) return toast('Informe um valor válido.', true);
+    await db(sb.from('perfis').update({ meta_economia_mensal: v }).eq('user_id', state.user.id));
+    state.perfil = null;
+    toast('Meta salva.');
+    route();
+  };
+}
+
+/* ---------- início: economia do mês e do ano contra a meta ---------- */
 async function vInicio(el) {
   el.innerHTML = '<p class="carregando">Calculando…</p>';
   await sb.rpc('materializar_recorrencias');
@@ -377,49 +421,85 @@ async function vInicio(el) {
   const [ind, plano, diario] = await Promise.all([
     db(sb.rpc('indicadores', { p_ano: ano, p_mes: mes })),
     db(sb.rpc('planejamento_anual', { p_ano: ano })),
-    db(sb.rpc('saldo_diario_mes'))
+    db(sb.rpc('economia_diaria_mes'))
   ]);
 
   if (!ind.tem_dados) {
     el.innerHTML = `
       <h1 class="titulo">Bem-vindo</h1>
       <div class="vazio">
-        <p>Seu painel aparece assim que você lançar o primeiro ganho ou gasto. Comece pelo salário e pelas contas que se repetem todo mês: elas ficam lançadas sozinhas daqui para frente.</p>
+        <p>Seu painel aparece assim que você lançar o primeiro ganho ou gasto. Comece pelo salário e pelas contas que se repetem todo mês: escolha “Todo mês” em Repetição e elas ficam lançadas sozinhas.</p>
         <a class="btn" href="#lancamentos">Fazer o primeiro lançamento</a>
       </div>`;
     return;
   }
 
-  const linhaMes = plano.find(r => r.mes === mes);
-  const fimMes = num(linhaMes.saldo_final);
-  const fimAno = num(plano[plano.length - 1].saldo_final);
-  const saldo = num(ind.saldo_hoje);
-  const negFuturo = plano.find(r => r.mes >= mes && num(r.saldo_final) < 0);
-  const risco = saldo < 0 || fimMes < 0 || !!negFuturo;
+  const meta = num(ind.meta_economia);
+  const lm = plano.find(r => r.mes === mes);
+  const econFim = num(lm.economia_mes);
+  const econAgora = num(ind.economia);
+  const st = statusMeta(econFim, meta);
   const soma = f => plano.reduce((s, r) => s + f(r), 0);
   const recAno = soma(r => num(r.receitas_real) + num(r.receitas_prev));
   const desAno = soma(r => num(r.despesas_real) + num(r.despesas_fixas_prev) + num(r.despesas_var_est));
-  const menor = plano.filter(r => r.mes >= mes).reduce((m, r) => (num(r.saldo_final) < num(m.saldo_final) ? r : m));
-  const sobra = num(ind.sobra);
-  const entraAinda = num(linhaMes.receitas_prev);
-  const saiAinda = num(linhaMes.despesas_fixas_prev) + num(linhaMes.despesas_var_est);
+  const econAno = soma(r => num(r.economia_mes));
+  const mesesOk = meta > 0 ? plano.filter(r => num(r.economia_mes) >= meta).length : 0;
+  const rendaMes = num(lm.receitas_real) + num(lm.receitas_prev);
+  const gastoMes = num(lm.despesas_real) + num(lm.despesas_fixas_prev) + num(lm.despesas_var_est);
+  const entraAinda = num(lm.receitas_prev);
+  const saiAinda = num(lm.despesas_fixas_prev) + num(lm.despesas_var_est);
+
+  let h1, sub, risco = false;
+  if (st) {
+    risco = !st.ok;
+    h1 = st.ok ? 'Você está dentro da meta de economia.' : 'Você está fora da meta de economia.';
+    sub = st.ok
+      ? `A previsão para ${MESES[mes - 1]} é economizar ${brl0(econFim)}, ${brl0(st.dif)} acima da meta de ${brl0(meta)}.`
+      : (econFim >= 0
+        ? `A previsão para ${MESES[mes - 1]} é economizar ${brl0(econFim)}. Faltam ${brl0(st.dif)} para a meta de ${brl0(meta)}.`
+        : `A previsão para ${MESES[mes - 1]} é gastar ${brl0(-econFim)} a mais do que você ganha. Faltam ${brl0(st.dif)} para a meta de ${brl0(meta)}.`);
+  } else {
+    risco = econFim < 0;
+    h1 = econFim >= 0 ? `Você deve economizar ${brl0(econFim)} em ${MESES[mes - 1]}.` : `Você deve gastar ${brl0(-econFim)} a mais do que ganha em ${MESES[mes - 1]}.`;
+    sub = 'Defina uma meta de economia mensal logo abaixo para acompanhar se está dentro dela.';
+  }
+  if (rendaMes === 0) sub += ' Cadastre seu salário como fixo para a previsão considerar sua renda.';
 
   const alertas = [];
-  if (negFuturo) alertas.push({ nivel: 'critico', t: 'Saldo negativo previsto', x: `Pela projeção, o saldo termina ${cap(MESES[negFuturo.mes - 1])} em ${brl0(negFuturo.saldo_final)}.` });
+  plano.filter(r => r.mes > mes && num(r.economia_mes) < 0).slice(0, 3).forEach(r => alertas.push({
+    nivel: 'critico', t: `Previsão de gastar mais do que ganha em ${MESES[r.mes - 1]}`, x: `A economia prevista é de ${brl0(r.economia_mes)}.`
+  }));
+  if (meta > 0) {
+    const fora = plano.filter(r => r.mes > mes && num(r.economia_mes) >= 0 && num(r.economia_mes) < meta);
+    if (fora.length) alertas.push({ nivel: 'aviso', t: 'Meses previstos abaixo da meta', x: fora.map(r => MES3[r.mes - 1]).join(', ') + '.' });
+  }
   (ind.categorias || []).filter(c => num(c.pct) >= 80).forEach(c => alertas.push({
     nivel: num(c.pct) >= 100 ? 'critico' : 'aviso',
     t: `${num(c.pct) >= 100 ? 'Limite estourado' : 'Perto do limite'}: ${c.nome}`,
-    x: `Você usou ${num(c.pct)}% do limite de ${cap(MESES[mes - 1])}.`
+    x: `Você usou ${num(c.pct)}% do limite de ${MESES[mes - 1]}.`
   }));
 
+  const pct = meta > 0 ? Math.max(0, Math.min(100, econFim / meta * 100)) : 0;
+
   el.innerHTML = `
-    <div class="manchete ${risco ? 'risco' : ''}">
-      <h1>${saldo < 0 ? `Seu saldo está negativo em ${brl0(Math.abs(saldo))}.` : `Você tem ${brl0(saldo)} hoje.`}</h1>
-      <p>Previsão: ${brl0(fimMes)} no fim de ${MESES[mes - 1]} e ${brl0(fimAno)} no fim de ${ano}.</p>
-    </div>
+    <div class="manchete ${risco ? 'risco' : ''}"><h1>${esc(h1)}</h1><p>${esc(sub)}</p></div>
 
     <section class="sec">
-      <h2>Saldo de ${MESES[mes - 1]}</h2>
+      <h2>Meta de economia de ${MESES[mes - 1]}</h2>
+      ${meta > 0 ? `
+        <dl class="par">
+          <dt>Meta do mês</dt><dd>${brl0(meta)}</dd>
+          <dt>Economizado até agora</dt><dd class="${econAgora < 0 ? 'neg' : ''}">${brl(econAgora)}</dd>
+          <dt>Previsto para o fim do mês</dt><dd class="forte ${econFim < 0 ? 'neg' : ''}">${brl(econFim)}</dd>
+          <dt>Situação</dt><dd class="${st.ok ? 'pos' : 'neg'}">${st.ok ? `Dentro da meta (+${brl0(st.dif)})` : `Fora da meta (faltam ${brl0(st.dif)})`}</dd>
+        </dl>
+        <div class="barra ${st.ok ? '' : econFim < 0 ? 'estouro' : 'aviso'}" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(pct)}" aria-label="Previsão de economia em relação à meta"><i style="width:${pct}%"></i></div>
+        <details class="novo"><summary>Alterar meta</summary>${htmlFormMeta(meta)}</details>`
+        : `<p class="muted" style="margin-top:-4px">Diga quanto quer guardar por mês e o app mostra se você está dentro ou fora da meta.</p>${htmlFormMeta(0)}`}
+    </section>
+
+    <section class="sec">
+      <h2>Economia acumulada em ${MESES[mes - 1]}</h2>
       <div id="gd"></div>
     </section>
 
@@ -429,12 +509,14 @@ async function vInicio(el) {
     <section class="sec">
       <h2>${cap(MESES[mes - 1])}</h2>
       <dl class="par">
-        <dt>Entrou</dt><dd>${brl(ind.receitas)}</dd>
-        <dt>Saiu</dt><dd>${brl(ind.despesas)}</dd>
-        <dt>${sobra >= 0 ? 'Sobrou até agora' : 'Faltou até agora'}</dt><dd class="${sobra >= 0 ? 'pos' : 'neg'}">${brl(Math.abs(sobra))}</dd>
+        <dt>Renda fixa recebida</dt><dd>${brl(ind.renda_fixa)}</dd>
+        <dt>Outros ganhos</dt><dd>${brl(ind.renda_extra)}</dd>
+        <dt>Gastos até agora</dt><dd>${brl(ind.despesas)}</dd>
         <dt>Ainda previsto para entrar</dt><dd>${brl(entraAinda)}</dd>
         <dt>Ainda previsto para sair</dt><dd>${brl(saiAinda)}</dd>
-        <dt>Saldo previsto no fim do mês</dt><dd class="forte ${fimMes < 0 ? 'neg' : ''}">${brl(fimMes)}</dd>
+        <dt>Renda prevista do mês</dt><dd>${brl(rendaMes)}</dd>
+        <dt>Gastos previstos do mês</dt><dd>${brl(gastoMes)}</dd>
+        <dt>Economia prevista</dt><dd class="forte ${econFim < 0 ? 'neg' : ''}">${brl(econFim)}</dd>
       </dl>
     </section>
 
@@ -443,12 +525,19 @@ async function vInicio(el) {
       <dl class="par">
         <dt>Receitas (realizadas e previstas)</dt><dd>${brl0(recAno)}</dd>
         <dt>Despesas (realizadas e previstas)</dt><dd>${brl0(desAno)}</dd>
-        <dt>Menor saldo previsto</dt><dd class="${num(menor.saldo_final) < 0 ? 'neg' : ''}">${brl0(menor.saldo_final)} em ${MESES[menor.mes - 1]}</dd>
-        <dt>Saldo previsto em dezembro</dt><dd class="forte ${fimAno < 0 ? 'neg' : ''}">${brl0(fimAno)}</dd>
+        <dt>Economia prevista no ano</dt><dd class="forte ${econAno < 0 ? 'neg' : ''}">${brl0(econAno)}</dd>
+        ${meta > 0 ? `<dt>Meta do ano (${brl0(meta)} × 12)</dt><dd>${brl0(meta * 12)}</dd>
+        <dt>Meses dentro da meta</dt><dd class="${mesesOk >= 12 ? 'pos' : ''}">${mesesOk} de 12</dd>` : ''}
       </dl>
       <p class="acoes"><a class="btn sec2 mini" href="#planejamento">Ver o ano mês a mês</a><a class="btn sec2 mini" href="#indicadores">Ver indicadores</a></p>
     </section>`;
-  graficoDiario($('#gd', el), diario);
+
+  const diasMes = diario.length;
+  graficoLinha($('#gd', el), diario.map(r => ({
+    rot: fmtData(r.dia), v: num(r.acumulado), proj: r.projetado,
+    texto: `${fmtData(r.dia)}: economia acumulada de ${brl(r.acumulado)}${r.projetado ? ' (previsto)' : ''}`
+  })), { id: 'd', hoje: true, alvo: meta > 0 ? Array(diasMes).fill(meta) : null, aria: 'Economia acumulada no mês, real até hoje e prevista depois, com a linha da meta' });
+  ligarFormMeta(el);
 }
 
 /* ---------- lançamentos: lançar, histórico do mês e fixos ---------- */
@@ -471,7 +560,7 @@ async function vLancamentos(el) {
 
   el.innerHTML = `
     <h1 class="titulo">Lançamentos</h1>
-    <p class="sub">Anote o que entrou e o que saiu. Marque como fixo o que se repete: ele passa a ser lançado sozinho.</p>
+    <p class="sub">Lance seus ganhos e gastos. Marque como fixo o que se repete todo mês, como salário e aluguel: ele passa a ser lançado sozinho.</p>
     <form id="fl" class="form">
       <fieldset class="seg"><legend class="sr">Tipo</legend>
         <input type="radio" name="tipo" id="t-d" value="despesa" checked><label for="t-d">Gasto</label>
@@ -626,11 +715,20 @@ async function vLancamentos(el) {
 async function vIndicadores(el) {
   await carregarAnoMin();
   const f = state.ind;
-  const ind = await db(sb.rpc('indicadores', { p_ano: f.a, p_mes: f.m }));
-  const futuro = new Date(f.a, f.m - 1, 1) > agora;
-  const sobra = num(ind.sobra);
+  const [ind, plano] = await Promise.all([
+    db(sb.rpc('indicadores', { p_ano: f.a, p_mes: f.m })),
+    db(sb.rpc('planejamento_anual', { p_ano: f.a }))
+  ]);
+  const lm = plano.find(r => r.mes === f.m);
+  const sit = lm.situacao;
+  const meta = num(ind.meta_economia);
+  const econ = num(lm.economia_mes);
+  const st = statusMeta(econ, meta);
+  const rendaPrev = num(lm.receitas_real) + num(lm.receitas_prev);
+  const gastoPrev = num(lm.despesas_real) + num(lm.despesas_fixas_prev) + num(lm.despesas_var_est);
   const comp = ind.comprometimento_pct == null ? null : num(ind.comprometimento_pct);
   const cats = ind.categorias || [];
+  const pct = meta > 0 ? Math.max(0, Math.min(100, econ / meta * 100)) : 0;
 
   el.innerHTML = `
     <h1 class="titulo">Indicadores</h1>
@@ -638,25 +736,40 @@ async function vIndicadores(el) {
       <label>Ano <select id="fa">${optAnos(f.a)}</select></label>
       <label>Mês <select id="fm">${optMeses(f.m)}</select></label>
     </div>
-    ${futuro ? '<p class="vazio">Este mês ainda não começou. Veja a previsão na aba Ano.</p>' : `
+
     <section class="sec">
-      <h2>${cap(MESES[f.m - 1])} de ${f.a}</h2>
+      <h2>Economia de ${MESES[f.m - 1]} de ${f.a}</h2>
       <dl class="par">
-        <dt>Entrou</dt><dd>${brl(ind.receitas)}</dd>
-        <dt>Saiu</dt><dd>${brl(ind.despesas)}</dd>
-        ${num(ind.investido) > 0 ? `<dt>Investido</dt><dd>${brl(ind.investido)}</dd>` : ''}
-        <dt>${sobra >= 0 ? 'Sobrou' : 'Faltou'}</dt><dd class="forte ${sobra >= 0 ? 'pos' : 'neg'}">${brl(Math.abs(sobra))}</dd>
-        <dt>Parte da renda que você guardou</dt><dd>${ind.taxa_poupanca == null ? 'sem renda no mês' : num(ind.taxa_poupanca).toFixed(0) + '%'}</dd>
+        <dt>Meta de economia</dt><dd>${meta > 0 ? brl0(meta) : 'não definida'}</dd>
+        <dt>${sit === 'realizado' ? 'Você economizou' : 'Economia prevista no fim do mês'}</dt><dd class="forte ${econ < 0 ? 'neg' : ''}">${brl(econ)}</dd>
+        ${st ? `<dt>Situação</dt><dd class="${st.ok ? 'pos' : 'neg'}">${st.ok ? `Dentro da meta (+${brl0(st.dif)})` : `Fora da meta (faltam ${brl0(st.dif)})`}</dd>` : ''}
       </dl>
+      ${st ? `<div class="barra ${st.ok ? '' : econ < 0 ? 'estouro' : 'aviso'}"><i style="width:${pct}%"></i></div>` : '<p class="muted pequeno">Defina a meta em <a href="#metas">Metas</a> para ver se está dentro ou fora.</p>'}
     </section>
 
     <section class="sec">
+      <h2>Renda e gastos</h2>
+      <dl class="par">
+        ${sit === 'projetado' ? '' : `
+        <dt>Renda fixa recebida</dt><dd>${brl(ind.renda_fixa)}</dd>
+        <dt>Outros ganhos</dt><dd>${brl(ind.renda_extra)}</dd>
+        <dt>Gastos</dt><dd>${brl(ind.despesas)}</dd>
+        ${num(ind.investido) > 0 ? `<dt>Investido</dt><dd>${brl(ind.investido)}</dd>` : ''}
+        <dt>Parte da renda que você guardou</dt><dd>${ind.taxa_poupanca == null ? 'sem renda no mês' : num(ind.taxa_poupanca).toFixed(0) + '%'}</dd>`}
+        ${sit === 'realizado' ? '' : `
+        <dt>Renda prevista do mês</dt><dd>${brl(rendaPrev)}</dd>
+        <dt>Gastos previstos do mês</dt><dd>${brl(gastoPrev)}</dd>`}
+      </dl>
+    </section>
+
+    ${sit === 'projetado' ? '' : `
+    <section class="sec">
       <h2>Gastos por categoria</h2>
       ${cats.length ? `<ul class="lista">${cats.map(c => {
-        const pct = c.pct == null ? null : num(c.pct);
-        const cls = pct == null ? '' : pct >= 100 ? 'estouro' : pct >= 80 ? 'aviso' : '';
+        const p = c.pct == null ? null : num(c.pct);
+        const cls = p == null ? '' : p >= 100 ? 'estouro' : p >= 80 ? 'aviso' : '';
         return `<li><div class="cat-topo"><span>${esc(c.nome)}</span><span>${brl0(c.gasto)}${num(c.orcamento) > 0 ? ` de ${brl0(c.orcamento)}` : ''}</span></div>
-          ${pct == null ? '' : `<div class="barra ${cls}"><i style="width:${Math.min(100, pct)}%"></i></div>`}</li>`;
+          ${p == null ? '' : `<div class="barra ${cls}"><i style="width:${Math.min(100, p)}%"></i></div>`}</li>`;
       }).join('')}</ul>` : '<p class="vazio">Nenhum gasto neste mês.</p>'}
       ${cats.some(c => num(c.orcamento) > 0) ? '' : '<p class="muted pequeno">Defina limites mensais em <a href="#ajustes">Ajustes</a> para receber avisos antes de estourar.</p>'}
     </section>
@@ -668,17 +781,15 @@ async function vIndicadores(el) {
       ${ind.maiores_gastos.map(g => `<li class="linha" style="grid-template-columns:1fr auto"><div><strong>${esc(g.descricao || 'Gasto')}</strong><span class="meta">${esc(g.categoria || 'Sem categoria')} · ${fmtData(g.data)}</span></div><span class="val">${brl(g.valor)}</span></li>`).join('')}</ul></section>` : ''}`}
 
     <section class="sec">
-      <h2>Sua base hoje</h2>
+      <h2>Sua base fixa</h2>
       <dl class="par">
-        <dt>Saldo atual</dt><dd class="forte ${num(ind.saldo_hoje) < 0 ? 'neg' : ''}">${brl(ind.saldo_hoje)}</dd>
         <dt>Renda fixa mensal</dt><dd>${brl(ind.renda_fixa_mensal)}</dd>
         <dt>Gastos fixos mensais</dt><dd>${brl(ind.fixas_mensais)}</dd>
         <dt>Renda fixa comprometida</dt><dd>${comp == null ? 'cadastre seu salário como fixo' : comp.toFixed(0) + '%'}</dd>
       </dl>
       ${comp == null ? '' : `<div class="barra ${comp >= 80 ? 'estouro' : comp >= 60 ? 'aviso' : ''}" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.min(100, comp)}" aria-label="Renda fixa comprometida"><i style="width:${Math.min(100, comp)}%"></i></div>`}
       <dl class="par" style="margin-top:16px">
-        <dt>Gasto médio por mês (90 dias)</dt><dd>${brl0(ind.gasto_medio_mensal)}</dd>
-        <dt>Seu saldo cobre</dt><dd>${ind.meses_folego == null ? 'sem dados' : String(ind.meses_folego).replace('.', ',') + ' meses de gastos'}</dd>
+        <dt>Gasto médio por mês (últimos 90 dias)</dt><dd>${brl0(ind.gasto_medio_mensal)}</dd>
       </dl>
     </section>`;
 
@@ -692,16 +803,17 @@ async function vPlanejamento(el) {
   await sb.rpc('materializar_recorrencias');
   const ano = state.plano.a;
   const rows = await db(sb.rpc('planejamento_anual', { p_ano: ano }));
+  const meta = num(rows[0].meta_economia);
   const soma = f => rows.reduce((s, r) => s + f(r), 0);
   const recAno = soma(r => num(r.receitas_real) + num(r.receitas_prev));
   const desAno = soma(r => num(r.despesas_real) + num(r.despesas_fixas_prev) + num(r.despesas_var_est));
-  const fim = num(rows[rows.length - 1].saldo_final);
-  const vermelhos = rows.filter(r => num(r.saldo_final) < 0).length;
+  const econAno = soma(r => num(r.economia_mes));
+  const mesesOk = meta > 0 ? rows.filter(r => num(r.economia_mes) >= meta).length : 0;
   const mesAtual = ano === hojeAno() ? agora.getMonth() + 1 : 0;
 
   el.innerHTML = `
     <h1 class="titulo">Planejamento do ano</h1>
-    <p class="sub">Veja o que já aconteceu e o que está previsto, mês a mês. Para planejar, lance gastos e ganhos com datas futuras ou cadastre fixos.</p>
+    <p class="sub">Renda fixa, outros ganhos e gastos, mês a mês, contra a sua meta de economia. Para planejar, lance ganhos e gastos com datas futuras ou cadastre fixos.</p>
     <div class="nav-mes">
       <button id="ant" aria-label="Ano anterior" ${ano <= state.anoMin ? 'disabled' : ''}>‹</button>
       <label class="sr" for="sel-ano">Ano</label>
@@ -709,16 +821,24 @@ async function vPlanejamento(el) {
       <button id="prox" aria-label="Próximo ano">›</button>
     </div>
 
-    <div id="ga"></div>
+    <section class="sec" style="border-top:0;margin-top:8px">
+      <h2>Economia por mês</h2>
+      <div id="gb"></div>
+    </section>
+
+    <section class="sec">
+      <h2>Economia acumulada em ${ano}</h2>
+      <div id="gl"></div>
+    </section>
 
     <section class="sec">
       <h2>Resumo de ${ano}</h2>
       <dl class="par">
         <dt>Receitas</dt><dd>${brl0(recAno)}</dd>
         <dt>Despesas</dt><dd>${brl0(desAno)}</dd>
-        <dt>Resultado do ano</dt><dd class="${recAno - desAno >= 0 ? 'pos' : 'neg'}">${brl0(recAno - desAno)}</dd>
-        <dt>Saldo no fim de dezembro</dt><dd class="forte ${fim < 0 ? 'neg' : ''}">${brl0(fim)}</dd>
-        <dt>Meses que terminam no vermelho</dt><dd class="${vermelhos ? 'neg' : ''}">${vermelhos}</dd>
+        <dt>Economia do ano</dt><dd class="forte ${econAno < 0 ? 'neg' : ''}">${brl0(econAno)}</dd>
+        ${meta > 0 ? `<dt>Meta do ano (${brl0(meta)} × 12)</dt><dd>${brl0(meta * 12)}</dd>
+        <dt>Meses dentro da meta</dt><dd class="${mesesOk >= 12 ? 'pos' : ''}">${mesesOk} de 12</dd>` : '<dt>Meta de economia</dt><dd><a href="#metas">definir</a></dd>'}
       </dl>
     </section>
 
@@ -727,66 +847,92 @@ async function vPlanejamento(el) {
       <ul class="lista">${rows.map(r => {
         const ent = num(r.receitas_real) + num(r.receitas_prev);
         const sai = num(r.despesas_real) + num(r.despesas_fixas_prev) + num(r.despesas_var_est);
+        const e = num(r.economia_mes), st = statusMeta(e, meta);
         const sit = r.situacao === 'realizado' ? 'Realizado' : r.situacao === 'em_andamento' ? 'Em andamento' : 'Previsto';
         return `<li class="mes-linha linha" style="grid-template-columns:1fr auto">
           <div><strong>${cap(MESES[r.mes - 1])}</strong><span class="tag ${r.mes === mesAtual ? 'atual' : ''}">${sit}</span>
-            <span class="meta">Entra ${brl0(ent)} · Sai ${brl0(sai)}${num(r.despesas_var_est) > 0 ? ` (inclui ${brl0(r.despesas_var_est)} estimados do dia a dia)` : ''}</span></div>
-          <div style="text-align:right"><span class="val ${num(r.saldo_final) < 0 ? 'neg' : ''}">${brl0(r.saldo_final)}</span><span class="meta">saldo no fim</span></div>
+            <span class="meta">Renda ${brl0(ent)} · Gastos ${brl0(sai)}${num(r.despesas_var_est) > 0 ? ` (inclui ${brl0(r.despesas_var_est)} estimados do dia a dia)` : ''}</span>
+            <span class="meta">Acumulado no ano: ${brl0(r.economia_acumulada)}</span></div>
+          <div style="text-align:right"><span class="val ${e < 0 ? 'neg' : ''}">${brl0(e)}</span><span class="meta">economia</span>
+            ${st ? `<span class="meta ${st.ok ? 'pos' : 'neg'}" style="font-weight:600">${st.ok ? 'Dentro da meta' : 'Fora da meta'}</span>` : ''}</div>
         </li>`;
       }).join('')}</ul>
-      <p class="muted pequeno">Meses futuros somam fixos, parcelas e lançamentos agendados, mais uma estimativa dos seus gastos do dia a dia baseada nos últimos 60 dias.</p>
+      <p class="muted pequeno">Meses futuros somam fixos, parcelas e lançamentos agendados, mais uma estimativa dos seus gastos do dia a dia baseada nos últimos 60 dias. Investimentos contam como economia.</p>
     </section>`;
 
-  graficoAnual($('#ga', el), rows, ano);
+  graficoBarras($('#gb', el), rows, ano);
+  graficoLinha($('#gl', el), rows.map(r => ({
+    rot: MES3[r.mes - 1], v: num(r.economia_acumulada), proj: r.situacao !== 'realizado',
+    texto: `${cap(MESES[r.mes - 1])}: economia acumulada de ${brl0(r.economia_acumulada)} no ano${r.situacao === 'realizado' ? '' : ' (previsto)'}`
+  })), { id: 'a', hoje: false, alvo: meta > 0 ? rows.map((_, i) => meta * (i + 1)) : null, aria: `Economia acumulada em ${ano}, com o ritmo da meta` });
   const ir = a => { state.plano.a = a; route(); };
   $('#sel-ano', el).onchange = e => ir(parseInt(e.target.value, 10));
   $('#ant', el).onclick = () => ir(ano - 1);
   $('#prox', el).onclick = () => ir(ano + 1);
 }
 
-/* ---------- metas ---------- */
+/* ---------- metas: economia mensal e objetivos ---------- */
 async function vMetas(el) {
-  const metas = await db(sb.from('metas').select('*').order('prazo'));
+  const ano = agora.getFullYear(), mes = agora.getMonth() + 1;
+  const [metas, plano] = await Promise.all([
+    db(sb.from('metas').select('*').order('prazo')),
+    db(sb.rpc('planejamento_anual', { p_ano: ano }))
+  ]);
+  const meta = num(plano[0].meta_economia);
+  const econ = num(plano.find(r => r.mes === mes).economia_mes);
+  const st = statusMeta(econ, meta);
   const h = hoje(), d0 = hojeDate();
+
   el.innerHTML = `
     <h1 class="titulo">Metas</h1>
-    <p class="sub">Defina o valor e o prazo. O app calcula quanto guardar por mês.</p>
-    ${metas.length ? `<ul class="lista">${metas.map(m => {
-      const falta = Math.max(0, num(m.valor_alvo) - num(m.valor_atual));
-      const pct = Math.min(100, num(m.valor_atual) / num(m.valor_alvo) * 100);
-      const p = parseISO(m.prazo);
-      const meses = Math.max(1, (p.getFullYear() - d0.getFullYear()) * 12 + (p.getMonth() - d0.getMonth()));
-      const atrasada = m.prazo < h && falta > 0;
-      return `<li>
-        <div class="cat-topo"><strong>${esc(m.nome)}</strong><span>${brl0(m.valor_atual)} de ${brl0(m.valor_alvo)}</span></div>
-        <div class="barra"><i style="width:${pct}%"></i></div>
-        <p class="muted" style="margin:6px 0 0">${falta === 0 ? 'Meta batida.' : atrasada ? `Prazo de ${fmtDataLonga(m.prazo)} vencido. Faltam ${brl0(falta)}.` : `Até ${fmtDataLonga(m.prazo)}: guarde ${brl0(falta / meses)} por mês (${meses} ${meses === 1 ? 'mês' : 'meses'}).`}</p>
-        <div class="acoes">
-          <button class="btn sec2 mini" data-a="add" data-id="${m.id}" data-v="${m.valor_atual}">Adicionar valor</button>
-          <button class="btn perigo mini" data-a="del" data-id="${m.id}">Excluir</button>
-        </div></li>`;
-    }).join('')}</ul>` : '<p class="vazio">Nenhuma meta ainda. Que tal a viagem, a reserva ou a entrada do carro?</p>'}
+    <section class="sec" style="border-top:0;margin-top:8px">
+      <h2>Economia por mês</h2>
+      ${st ? `<p style="margin:0 0 4px"><strong class="${st.ok ? 'pos' : 'neg'}">${st.ok ? 'Dentro da meta' : 'Fora da meta'}</strong> em ${MESES[mes - 1]}: previsão de ${brl0(econ)} para uma meta de ${brl0(meta)}.</p>`
+        : '<p class="muted" style="margin-top:-4px">Defina quanto quer guardar por mês. O app compara com sua renda e seus gastos e mostra se você está dentro ou fora.</p>'}
+      ${htmlFormMeta(meta)}
+    </section>
 
-    <details class="novo" ${metas.length ? '' : 'open'}>
-      <summary>Criar meta</summary>
-      <form id="fm" class="form">
-        <label>Nome da meta <input id="mnome" required placeholder="Ex.: reserva de emergência"></label>
-        <div class="dupla">
-          <label>Valor alvo <input id="malvo" inputmode="decimal" required placeholder="0,00"></label>
-          <label>Já guardado <input id="matual" inputmode="decimal" placeholder="0,00"></label>
-        </div>
-        <label>Prazo <input id="mprazo" type="date" min="${h}" required></label>
-        <button class="btn">Criar meta</button>
-      </form>
-    </details>`;
+    <section class="sec">
+      <h2>Objetivos</h2>
+      <p class="muted" style="margin-top:-4px">Viagem, reserva, entrada do carro. Defina o valor e o prazo e o app calcula quanto guardar por mês.</p>
+      ${metas.length ? `<ul class="lista">${metas.map(m => {
+        const falta = Math.max(0, num(m.valor_alvo) - num(m.valor_atual));
+        const pct = Math.min(100, num(m.valor_atual) / num(m.valor_alvo) * 100);
+        const p = parseISO(m.prazo);
+        const meses = Math.max(1, (p.getFullYear() - d0.getFullYear()) * 12 + (p.getMonth() - d0.getMonth()));
+        const atrasada = m.prazo < h && falta > 0;
+        return `<li>
+          <div class="cat-topo"><strong>${esc(m.nome)}</strong><span>${brl0(m.valor_atual)} de ${brl0(m.valor_alvo)}</span></div>
+          <div class="barra"><i style="width:${pct}%"></i></div>
+          <p class="muted" style="margin:6px 0 0">${falta === 0 ? 'Objetivo batido.' : atrasada ? `Prazo de ${fmtDataLonga(m.prazo)} vencido. Faltam ${brl0(falta)}.` : `Até ${fmtDataLonga(m.prazo)}: guarde ${brl0(falta / meses)} por mês (${meses} ${meses === 1 ? 'mês' : 'meses'}).`}</p>
+          <div class="acoes">
+            <button class="btn sec2 mini" data-a="add" data-id="${m.id}" data-v="${m.valor_atual}">Adicionar valor</button>
+            <button class="btn perigo mini" data-a="del" data-id="${m.id}">Excluir</button>
+          </div></li>`;
+      }).join('')}</ul>` : '<p class="vazio">Nenhum objetivo ainda.</p>'}
 
+      <details class="novo" ${metas.length ? '' : 'open'}>
+        <summary>Criar objetivo</summary>
+        <form id="fm" class="form">
+          <label>Nome <input id="mnome" required placeholder="Ex.: viagem, reserva de emergência"></label>
+          <div class="dupla">
+            <label>Valor alvo <input id="malvo" inputmode="decimal" required placeholder="0,00"></label>
+            <label>Já guardado <input id="matual" inputmode="decimal" placeholder="0,00"></label>
+          </div>
+          <label>Prazo <input id="mprazo" type="date" min="${h}" required></label>
+          <button class="btn">Criar objetivo</button>
+        </form>
+      </details>
+    </section>`;
+
+  ligarFormMeta(el);
   $('#fm', el).onsubmit = async e => {
     e.preventDefault();
     const alvo = parseValor($('#malvo', el).value);
     const atual = $('#matual', el).value ? parseValor($('#matual', el).value) : 0;
     if (!(alvo > 0) || Number.isNaN(atual) || atual < 0) return toast('Confira os valores digitados.', true);
     await db(sb.from('metas').insert({ nome: $('#mnome', el).value.trim(), valor_alvo: alvo, valor_atual: atual, prazo: $('#mprazo', el).value }));
-    toast('Meta criada.');
+    toast('Objetivo criado.');
     route();
   };
   $$('[data-a]', el).forEach(b => b.onclick = async () => {
@@ -796,7 +942,7 @@ async function vMetas(el) {
       await db(sb.from('metas').update({ valor_atual: num(b.dataset.v) + v }).eq('id', b.dataset.id));
       toast('Valor adicionado.');
     } else {
-      if (!confirm('Excluir esta meta?')) return;
+      if (!confirm('Excluir este objetivo?')) return;
       await db(sb.from('metas').delete().eq('id', b.dataset.id));
     }
     route();
@@ -806,22 +952,11 @@ async function vMetas(el) {
 /* ---------- ajustes ---------- */
 async function vAjustes(el) {
   await garantirCats();
-  const p = state.perfil;
-  const saldo = num(await db(sb.rpc('saldo_ate', { p_data: hoje() })));
   const despesas = state.cats.filter(c => c.tipo === 'despesa' && c.grupo !== 'investimento');
 
   el.innerHTML = `
     <h1 class="titulo">Ajustes</h1>
     <section class="sec" style="border-top:0;margin-top:8px">
-      <h2>Saldo</h2>
-      <p class="muted" style="margin-top:-4px">Se o saldo do app não bate com o da sua conta, informe o valor real. O histórico não muda.</p>
-      <form id="fa" class="form">
-        <label>Saldo em conta hoje <input id="asaldo" inputmode="decimal" value="${valorInput(saldo)}" required></label>
-        <button class="btn">Salvar saldo</button>
-      </form>
-    </section>
-
-    <section class="sec">
       <h2>Limite mensal por categoria</h2>
       <p class="muted" style="margin-top:-4px">Quanto você quer gastar por mês. Deixe 0 para não ter limite.</p>
       <ul class="lista">${despesas.map(c => `
@@ -848,16 +983,6 @@ async function vAjustes(el) {
       <button class="btn sec2" id="sair">Sair</button>
     </section>`;
 
-  $('#fa', el).onsubmit = async e => {
-    e.preventDefault();
-    const novo = parseValor($('#asaldo', el).value);
-    if (Number.isNaN(novo)) return toast('Confira o valor digitado.', true);
-    // Ajusta o saldo inicial para que o saldo de hoje fique igual ao informado.
-    await db(sb.from('perfis').update({ saldo_inicial: num(p.saldo_inicial) + (novo - saldo) }).eq('user_id', state.user.id));
-    state.perfil = null;
-    toast('Saldo atualizado.');
-    route();
-  };
   $$('.lim', el).forEach(i => i.onchange = async () => {
     const v = parseValor(i.value || '0');
     if (Number.isNaN(v) || v < 0) return toast('Informe um valor válido.', true);
