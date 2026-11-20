@@ -55,8 +55,8 @@
   <div id="app-screen" class="hidden">
     <!-- Navbar -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div class="flex items-center gap-6">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-4 sm:gap-6">
           <div class="flex items-center gap-2">
             <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white">
               <i data-lucide="refresh-cw" class="w-5 h-5"></i>
@@ -67,18 +67,18 @@
           <!-- Navegação entre Abas -->
           <nav class="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
             <button id="tab-overview" onclick="switchTab('overview')"
-              class="px-3 py-1.5 rounded-md text-sm font-medium bg-white text-slate-900 shadow-sm transition cursor-pointer">
+              class="px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium bg-white text-slate-900 shadow-sm transition cursor-pointer">
               Visão Geral & Lançamentos
             </button>
             <button id="tab-insights" onclick="switchTab('insights')"
-              class="px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900 transition cursor-pointer">
+              class="px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition cursor-pointer">
               Indicadores e Recomendações
             </button>
           </nav>
         </div>
 
         <div class="flex items-center gap-4">
-          <span id="user-email-display" class="text-sm text-slate-500 hidden sm:inline"></span>
+          <span id="user-email-display" class="text-sm text-slate-500 hidden md:inline"></span>
           <button onclick="logout()" class="flex items-center gap-1.5 text-sm text-slate-600 hover:text-rose-600 font-medium cursor-pointer">
             <i data-lucide="log-out" class="w-4 h-4"></i> Sair
           </button>
@@ -116,6 +116,7 @@
             <option value="2026" selected>2026</option>
             <option value="2027">2027</option>
             <option value="2028">2028</option>
+            <option value="2029">2029</option>
           </select>
         </div>
 
@@ -197,7 +198,7 @@
           </div>
         </section>
 
-        <!-- LANÇAMENTO EM LOTE / RECORRENTE + META MENSAL -->
+        <!-- LANÇAMENTO EM LOTE / RECORRENTE + META RECORRENTE -->
         <section class="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
           <!-- LANÇAMENTO DE MÚLTIPLAS LINHAS E RECORRÊNCIAS -->
@@ -219,7 +220,7 @@
 
               <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
                 <p class="text-xs text-slate-500">
-                  Dica: marque <strong>Fixo?</strong> e informe a <strong>Qtd. Meses</strong> para repetir automaticamente mês a mês.
+                  Dica: marque <strong>Repetir mensalmente (Fixo)</strong> e informe a <strong>Qtd. Meses</strong> para replicar automaticamente.
                 </p>
                 <button type="submit" id="save-batch-btn"
                   class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-5 rounded-lg text-sm transition cursor-pointer">
@@ -229,39 +230,58 @@
             </form>
           </div>
 
-          <!-- META MENSAL -->
+          <!-- META DE ECONOMIA POR VOLUME DE PERÍODOS -->
           <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
             <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
-              <i data-lucide="flag" class="w-5 h-5 text-indigo-600"></i> Definir Meta Mensal
+              <i data-lucide="flag" class="w-5 h-5 text-indigo-600"></i> Meta de Economia
             </h2>
             <form id="goal-form" class="space-y-3">
               <div class="grid grid-cols-2 gap-2">
-                <select id="g-month" required class="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
-                  <option value="1">Janeiro</option>
-                  <option value="2">Fevereiro</option>
-                  <option value="3">Março</option>
-                  <option value="4">Abril</option>
-                  <option value="5">Maio</option>
-                  <option value="6">Junho</option>
-                  <option value="7">Julho</option>
-                  <option value="8">Agosto</option>
-                  <option value="9">Setembro</option>
-                  <option value="10">Outubro</option>
-                  <option value="11">Novembro</option>
-                  <option value="12">Dezembro</option>
-                </select>
-                <select id="g-year" required class="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
-                  <option value="2025">2025</option>
-                  <option value="2026" selected>2026</option>
-                  <option value="2027">2027</option>
-                  <option value="2028">2028</option>
-                </select>
+                <div>
+                  <label class="block text-xs text-slate-500 mb-1">Mês inicial</label>
+                  <select id="g-month" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
+                    <option value="1">Janeiro</option>
+                    <option value="2">Fevereiro</option>
+                    <option value="3">Março</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Maio</option>
+                    <option value="6">Junho</option>
+                    <option value="7">Julho</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Setembro</option>
+                    <option value="10">Outubro</option>
+                    <option value="11">Novembro</option>
+                    <option value="12">Dezembro</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-500 mb-1">Ano inicial</label>
+                  <select id="g-year" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
+                    <option value="2025">2025</option>
+                    <option value="2026" selected>2026</option>
+                    <option value="2027">2027</option>
+                    <option value="2028">2028</option>
+                    <option value="2029">2029</option>
+                  </select>
+                </div>
               </div>
-              <input type="number" step="0.01" id="g-amount" required placeholder="Valor da meta (R$)"
-                class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
-              <button type="submit"
+
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-xs text-slate-500 mb-1">Valor mensal (R$)</label>
+                  <input type="number" step="0.01" id="g-amount" required placeholder="Ex: 1500.00"
+                    class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-500 mb-1">Qtd. de meses</label>
+                  <input type="number" min="1" max="120" id="g-periods" value="1" required
+                    class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
+                </div>
+              </div>
+
+              <button type="submit" id="save-goal-btn"
                 class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition cursor-pointer">
-                Salvar Meta
+                Salvar Meta(s)
               </button>
             </form>
           </div>
@@ -349,7 +369,7 @@
 
   <script>
     // =========================================================================
-    // CONFIGURAÇÃO DO SUPABASE
+    // CONFIGURAÇÃO DO SUPABASE (Substitua pelos dados do seu projeto)
     // =========================================================================
     const SUPABASE_URL = 'https://vwxeulgzvdkigrrvmutq.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_UXwWHP8ZaHvG4Ug5cvpRug_Olw7y9CM';
@@ -381,12 +401,12 @@
       document.getElementById('view-insights').classList.toggle('hidden', isOverview);
 
       document.getElementById('tab-overview').className = isOverview
-        ? 'px-3 py-1.5 rounded-md text-sm font-medium bg-white text-slate-900 shadow-sm transition cursor-pointer'
-        : 'px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900 transition cursor-pointer';
+        ? 'px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium bg-white text-slate-900 shadow-sm transition cursor-pointer'
+        : 'px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition cursor-pointer';
 
       document.getElementById('tab-insights').className = !isOverview
-        ? 'px-3 py-1.5 rounded-md text-sm font-medium bg-white text-slate-900 shadow-sm transition cursor-pointer'
-        : 'px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900 transition cursor-pointer';
+        ? 'px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium bg-white text-slate-900 shadow-sm transition cursor-pointer'
+        : 'px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition cursor-pointer';
 
       if (!isOverview) applyLocalFilters();
     }
@@ -504,7 +524,7 @@
 
     // Carregar dados do Supabase
     async function loadData() {
-      const year = parseInt(document.getElementById('filter-year').value);
+      const year = parseInt(document.getElementById('filter-year').value, 10);
       const month = document.getElementById('filter-month').value;
 
       let startDate = `${year}-01-01`;
@@ -512,7 +532,7 @@
 
       if (month !== 'all') {
         const m = month.padStart(2, '0');
-        const lastDay = new Date(year, parseInt(month), 0).getDate();
+        const lastDay = new Date(year, parseInt(month, 10), 0).getDate();
         startDate = `${year}-${m}-01`;
         endDate = `${year}-${m}-${lastDay}`;
       }
@@ -527,7 +547,7 @@
       if (!tError) allTransactions = transactions || [];
 
       let goalQuery = supabaseClient.from('savings_goals').select('*').eq('year', year);
-      if (month !== 'all') goalQuery = goalQuery.eq('month', parseInt(month));
+      if (month !== 'all') goalQuery = goalQuery.eq('month', parseInt(month, 10));
       const { data: goals, error: gError } = await goalQuery;
 
       if (!gError) currentGoals = goals || [];
@@ -661,7 +681,6 @@
       const expenseRatio = income > 0 ? ((expense / income) * 100) : 0;
       const fixedRatio = expense > 0 ? ((fixedExpenses / expense) * 100) : 0;
 
-      // Maior categoria de gasto
       const byCategory = {};
       expensesList.forEach(t => {
         byCategory[t.category] = (byCategory[t.category] || 0) + Number(t.amount);
@@ -675,7 +694,6 @@
       document.getElementById('ind-top-category').textContent = topCat ? topCat[0] : '—';
       document.getElementById('ind-top-category-val').textContent = topCat ? formatCurrency(topCat[1]) : 'R$ 0,00';
 
-      // Gerar recomendações
       const recs = [];
 
       if (income === 0 && expense === 0) {
@@ -700,7 +718,7 @@
         } else {
           recs.push({
             title: 'Oportunidade de aumentar a margem',
-            text: `Sua taxa de economia está em ${savingsRate.toFixed(1)}%. Tentar reduzir 10% nos gastos variáveis pode liberar ${formatCurrency(expense * 0.10)} no período.`,
+            text: `Sua taxa de economia está em ${savingsRate.toFixed(1)}%. Reduzir 10% nos gastos variáveis pode liberar ${formatCurrency(expense * 0.10)} no período.`,
             tone: 'amber'
           });
         }
@@ -753,7 +771,7 @@
       const [y, m, d] = dateStr.split('-').map(Number);
       const targetMonthIndex = (m - 1) + monthsToAdd;
       const targetYear = y + Math.floor(targetMonthIndex / 12);
-      const targetMonth = ((targetMonthIndex % 12) + 12) % 12; // 0-11
+      const targetMonth = ((targetMonthIndex % 12) + 12) % 12;
       const lastDayOfTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
       const safeDay = Math.min(d, lastDayOfTargetMonth);
 
@@ -780,7 +798,7 @@
         const category = row.querySelector('.row-category').value;
         const date = row.querySelector('.row-date').value;
         const isFixed = row.querySelector('.row-fixed').checked;
-        const monthsCount = isFixed ? Math.max(2, parseInt(row.querySelector('.row-months').value || '12')) : 1;
+        const monthsCount = isFixed ? Math.max(2, parseInt(row.querySelector('.row-months').value || '12', 10)) : 1;
 
         const groupId = isFixed ? crypto.randomUUID() : null;
 
@@ -820,25 +838,47 @@
       if (!error) loadData();
     }
 
+    // Salvar Meta de Economia por volume de períodos (meses)
     document.getElementById('goal-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const btn = document.getElementById('save-goal-btn');
+      btn.disabled = true;
+      btn.textContent = 'Salvando...';
+
       const { data: { user } } = await supabaseClient.auth.getUser();
-      const payload = {
-        user_id: user.id,
-        month: parseInt(document.getElementById('g-month').value),
-        year: parseInt(document.getElementById('g-year').value),
-        target_amount: parseFloat(document.getElementById('g-amount').value)
-      };
+      const startMonth = parseInt(document.getElementById('g-month').value, 10);
+      const startYear = parseInt(document.getElementById('g-year').value, 10);
+      const targetAmount = parseFloat(document.getElementById('g-amount').value);
+      const periods = Math.max(1, parseInt(document.getElementById('g-periods').value || '1', 10));
+
+      const goalsToUpsert = [];
+
+      for (let i = 0; i < periods; i++) {
+        const totalMonthIndex = (startMonth - 1) + i;
+        const currentYear = startYear + Math.floor(totalMonthIndex / 12);
+        const currentMonth = (totalMonthIndex % 12) + 1;
+
+        goalsToUpsert.push({
+          user_id: user.id,
+          month: currentMonth,
+          year: currentYear,
+          target_amount: targetAmount
+        });
+      }
 
       const { error } = await supabaseClient
         .from('savings_goals')
-        .upsert(payload, { onConflict: 'user_id,month,year' });
+        .upsert(goalsToUpsert, { onConflict: 'user_id,month,year' });
+
+      btn.disabled = false;
+      btn.textContent = 'Salvar Meta(s)';
 
       if (!error) {
         document.getElementById('g-amount').value = '';
+        document.getElementById('g-periods').value = '1';
         loadData();
       } else {
-        alert('Erro ao salvar meta: ' + error.message);
+        alert('Erro ao salvar meta(s): ' + error.message);
       }
     });
 
