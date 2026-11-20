@@ -1,1050 +1,574 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#F2F4F0">
-<title>Ciclo: finanças para quem é CLT</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-:root{
-  --fundo:#F2F4F0; --papel:#FFFFFF; --tinta:#1B2A32; --muted:#5F6D66; --linha:#D5DBD3;
-  --verde:#1F7A4D; --vermelho:#B3261E; --ambar:#A86F08; --azul:#2B59C3;
-  --r:8px;
-}
-*{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--fundo);color:var(--tinta);font:400 16px/1.5 Figtree,system-ui,sans-serif;font-variant-numeric:tabular-nums}
-h1,h2,h3{font-family:'Bricolage Grotesque',Figtree,sans-serif;line-height:1.15;margin:0;letter-spacing:-.01em}
-a{color:inherit}
-button,input,select{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--azul);outline-offset:2px}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-
-.wrap{max-width:720px;margin:0 auto;padding:0 20px calc(100px + env(safe-area-inset-bottom))}
-.wrap.estreito{max-width:440px;padding-bottom:40px}
-.topo{display:flex;justify-content:space-between;align-items:center;padding:calc(16px + env(safe-area-inset-top)) 0 8px}
-.marca{font:700 22px 'Bricolage Grotesque',sans-serif;text-decoration:none;letter-spacing:-.02em}
-.engrenagem{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;color:var(--muted)}
-.engrenagem.on{color:var(--tinta);background:#E4E9E2}
-.titulo{font-size:30px;font-weight:700;margin:16px 0 4px}
-.sub{color:var(--muted);margin:0 0 20px;max-width:58ch}
-.sec{padding:28px 0 8px;border-top:1px solid var(--linha);margin-top:24px}
-.sec h2{font-size:20px;font-weight:700;margin-bottom:12px}
-.muted{color:var(--muted)}
-.pequeno{font-size:14px}
-.carregando{color:var(--muted);padding:40px 0}
-
-/* abas inferiores */
-.abas{position:fixed;left:0;right:0;bottom:0;background:var(--papel);border-top:1px solid var(--linha);padding-bottom:env(safe-area-inset-bottom);z-index:5}
-.abas .in{display:grid;grid-template-columns:repeat(5,1fr);max-width:720px;margin:0 auto}
-.abas a{display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 0 8px;font-size:12px;font-weight:500;color:var(--muted);text-decoration:none}
-.abas a.on{color:var(--tinta);font-weight:600;box-shadow:inset 0 3px 0 var(--tinta)}
-.abas a.on svg{stroke-width:2.4}
-svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-
-/* início */
-.manchete{border-left:4px solid var(--verde);padding-left:16px;margin:12px 0 0}
-.manchete.risco{border-color:var(--vermelho)}
-.manchete h1{font-size:clamp(28px,6vw,42px);font-weight:700;letter-spacing:-.02em}
-.manchete p{margin:8px 0 0;color:var(--muted);max-width:60ch}
-.grafico{width:100%;height:auto;display:block;touch-action:pan-y;margin-top:12px}
-.grafico text{font:500 11px Figtree,sans-serif;fill:var(--muted)}
-.grafico .zero{stroke:var(--tinta);stroke-width:1;stroke-dasharray:3 4;opacity:.45}
-.grafico .marca-v{stroke:var(--linha);stroke-width:1}
-.leitura{min-height:26px;margin:6px 0 0;font-weight:500}
-.par{display:grid;grid-template-columns:1fr auto;gap:10px 16px;margin:0}
-.par dt{color:var(--muted)}
-.par dd{margin:0;text-align:right;font-weight:600}
-.par .forte{font-weight:700;font-size:18px;color:var(--tinta)}
-.pos{color:var(--verde)} .neg{color:var(--vermelho)}
-.barra{height:8px;background:#E1E7DF;border-radius:4px;overflow:hidden;margin-top:6px}
-.barra>i{display:block;height:100%;background:var(--verde)}
-.barra.aviso>i{background:var(--ambar)}
-.barra.estouro>i{background:var(--vermelho)}
-.lista{list-style:none;margin:0;padding:0}
-.lista>li{padding:12px 0;border-bottom:1px solid var(--linha)}
-.lista>li:last-child{border-bottom:0}
-.cat-topo{display:flex;justify-content:space-between;gap:12px}
-.alerta{border-left:4px solid var(--ambar);padding:2px 0 2px 12px}
-.alerta.critico{border-color:var(--vermelho)}
-.alerta strong{display:block}
-.vazio{padding:20px 0;color:var(--muted)}
-.vazio .btn{margin-top:12px}
-.leg{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:4px}
-.leg i{display:inline-block;width:18px;height:0;border-top:3px solid var(--azul);vertical-align:middle;margin-right:6px}
-.leg i.pt{border-top-style:dashed}
-.leg i.al{border-top:2px dotted var(--muted)}
-.leg .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle}
-.grafico .alvo{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:2 5;fill:none}
-
-/* formulários */
-.form{display:grid;gap:16px;margin-top:12px}
-.form label{display:grid;gap:6px;font-weight:500}
-.form input:not([type=radio]),.form select,.filtro select{width:100%;min-height:48px;padding:0 12px;border:1px solid #BCC5BB;border-radius:var(--r);background:var(--papel)}
-.dupla{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--tinta);border-radius:var(--r);overflow:hidden;padding:0;margin:0}
-.seg input{position:absolute;opacity:0}
-.seg label{display:block;text-align:center;padding:12px 0;font-weight:600;cursor:pointer}
-.seg input:checked+label{background:var(--tinta);color:#fff}
-.seg input:focus-visible+label{outline:2px solid var(--azul);outline-offset:-4px}
-.btn{min-height:48px;padding:0 20px;border:1px solid var(--tinta);border-radius:var(--r);background:var(--tinta);color:#fff;font-weight:600;cursor:pointer}
-a.btn{display:inline-grid;place-items:center;text-decoration:none}
-.btn.sec2{background:transparent;color:var(--tinta)}
-.btn.mini{min-height:36px;padding:0 12px;font-size:14px}
-.btn.perigo{background:transparent;color:var(--vermelho);border-color:var(--vermelho)}
-.btn:disabled{opacity:.5}
-.link{background:none;border:0;padding:8px 0;text-decoration:underline;cursor:pointer;color:var(--tinta)}
-.filtro{display:flex;gap:12px;margin:12px 0 4px}
-.filtro label{display:grid;gap:4px;font-weight:500;flex:1}
-details.novo{margin-top:16px;border-top:1px solid var(--linha);padding-top:8px}
-details.novo>summary{cursor:pointer;font-weight:600;min-height:44px;display:flex;align-items:center}
-.erro-msg{color:var(--vermelho);min-height:22px;margin:0}
-
-/* listas com ações */
-.linha{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center}
-.linha .meta{display:block;color:var(--muted);font-size:14px}
-.linha .val{font-weight:600;white-space:nowrap}
-.x{width:36px;height:36px;border:0;background:none;font-size:22px;color:var(--muted);cursor:pointer;border-radius:50%}
-.acoes{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-.nav-mes{display:flex;align-items:center;justify-content:space-between;margin:8px 0 4px}
-.nav-mes button{width:44px;height:44px;border-radius:50%;border:1px solid var(--linha);background:var(--papel);cursor:pointer;font-size:18px}
-.nav-mes button:disabled{opacity:.35}
-.mes-linha .tag{display:inline-block;font-size:12px;font-weight:600;padding:1px 8px;border-radius:999px;background:#E4E9E2;color:var(--muted);margin-left:6px}
-.mes-linha .tag.atual{background:var(--tinta);color:#fff}
-
-#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--tinta);color:#fff;padding:12px 18px;border-radius:var(--r);max-width:90vw;opacity:0;pointer-events:none;z-index:9}
-#toast.on{opacity:1}
-#toast.erro{background:var(--vermelho)}
-@media (prefers-reduced-motion:no-preference){#toast{transition:opacity .2s}}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ciclo — Controle Financeiro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+  </style>
 </head>
-<body>
-<div id="app"></div>
-<div id="toast" role="status" aria-live="polite"></div>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script>
-'use strict';
+  <!-- TELA DE LOGIN (Sem aba de cadastro) -->
+  <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 w-full max-w-md">
+      <div class="flex items-center gap-2 mb-6">
+        <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white">
+          <i data-lucide="refresh-cw" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900">Ciclo</h1>
+          <p class="text-xs text-slate-500">Gestão Financeira Pessoal</p>
+        </div>
+      </div>
 
-/* =====================================================================
-   CONFIGURAÇÃO: cole aqui os dados do seu projeto Supabase
-   (Project Settings > API). Use a chave "anon public", nunca a service_role.
-   ===================================================================== */
-const CONFIG = {
-  SUPABASE_URL: 'https://lxqbvailsupnazitnalj.supabase.co',
-  SUPABASE_ANON_KEY: 'sb_publishable_XYPTGoykcHl2Vl5mSU7BXw_9NoI98hL',
-  APP_NAME: 'Ciclo'
-};
-
-/* ---------- utilidades ---------- */
-const $ = (s, el = document) => el.querySelector(s);
-const $$ = (s, el = document) => [...el.querySelectorAll(s)];
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-const BRL0 = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
-const brl = v => BRL.format(Number(v || 0));
-const brl0 = v => BRL0.format(Number(v || 0));
-const pad = n => String(n).padStart(2, '0');
-const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-const parseISO = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
-const hojeDate = () => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); };
-const hoje = () => iso(hojeDate());
-const hojeAno = () => hojeDate().getFullYear();
-const diaNoMes = (a, m, d) => new Date(a, m - 1, Math.min(d, new Date(a, m, 0).getDate()));
-const addMeses = (d, n) => diaNoMes(d.getFullYear(), d.getMonth() + 1 + n, d.getDate());
-const fmtData = s => { const [, m, d] = s.split('-'); return `${d}/${m}`; };
-const fmtDataLonga = s => { const [y, m, d] = s.split('-'); return `${d}/${m}/${y}`; };
-const diffDias = (a, b) => Math.round((parseISO(b) - parseISO(a)) / 864e5);
-const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-const MES3 = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-const GRUPOS = { essencial: 'Essenciais', estilo_vida: 'Estilo de vida', divida: 'Dívidas', investimento: 'Investimentos' };
-const FORMAS = { pix: 'Pix', debito: 'Débito', credito: 'Crédito', dinheiro: 'Dinheiro', boleto: 'Boleto', recorrente: 'Fixo', outro: 'Outro' };
-const num = v => Number(v || 0);
-
-function parseValor(s) {
-  s = String(s || '').replace(/[R$\s]/g, '');
-  if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
-  const n = parseFloat(s);
-  return Number.isFinite(n) ? n : NaN;
-}
-const valorInput = v => num(v).toFixed(2).replace('.', ',');
-
-let tt;
-function toast(msg, erro) {
-  const t = $('#toast');
-  t.textContent = msg;
-  t.className = 'on' + (erro ? ' erro' : '');
-  clearTimeout(tt);
-  tt = setTimeout(() => { t.className = ''; }, 3400);
-}
-
-const sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
-async function db(q) {
-  const { data, error } = await q;
-  if (error) { toast(error.message, true); throw error; }
-  return data;
-}
-
-const agora = hojeDate();
-const state = {
-  user: null, perfil: null, cats: null, anoMin: null, foco: false,
-  lanc: { a: agora.getFullYear(), m: agora.getMonth() + 1 },
-  ind: { a: agora.getFullYear(), m: agora.getMonth() + 1 },
-  plano: { a: agora.getFullYear() }
-};
-const $app = $('#app');
-
-const IC = {
-  inicio: '<path d="M4 11l8-7 8 7M6 10v9h12v-9"/>',
-  lancamentos: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/>',
-  indicadores: '<path d="M4 20V10M10 20V5M16 20v-7M22 20H2"/>',
-  planejamento: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
-  metas: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>',
-  ajustes: '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>'
-};
-const icon = n => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${IC[n]}</svg>`;
-
-/* ---------- dados compartilhados ---------- */
-async function carregarPerfil() {
-  let { data, error } = await sb.from('perfis').select('*').maybeSingle();
-  if (error) throw error;
-  if (!data) {
-    await db(sb.rpc('iniciar_conta'));
-    ({ data, error } = await sb.from('perfis').select('*').maybeSingle());
-    if (error) throw error;
-  }
-  state.perfil = data;
-}
-async function garantirCats() {
-  if (!state.cats) {
-    state.cats = await db(sb.from('categorias').select('*').order('tipo', { ascending: false }).order('nome'));
-  }
-}
-async function carregarAnoMin() {
-  if (state.anoMin) return;
-  const r = await db(sb.from('transacoes').select('data').order('data', { ascending: true }).limit(1));
-  const a = r.length ? parseInt(r[0].data.slice(0, 4), 10) : hojeAno();
-  state.anoMin = Math.min(a, hojeAno());
-}
-function optAnos(sel) {
-  let h = '';
-  for (let a = state.anoMin; a <= hojeAno() + 3; a++) h += `<option value="${a}" ${a === sel ? 'selected' : ''}>${a}</option>`;
-  return h;
-}
-const optMeses = sel => MESES.map((m, i) => `<option value="${i + 1}" ${i + 1 === sel ? 'selected' : ''}>${cap(m)}</option>`).join('');
-function optCats(tipo, sel) {
-  const lista = state.cats.filter(c => c.tipo === tipo);
-  const op = c => `<option value="${c.id}" ${c.id === sel ? 'selected' : ''}>${esc(c.nome)}</option>`;
-  if (tipo === 'receita') return lista.map(op).join('');
-  return Object.entries(GRUPOS).map(([g, rot]) => {
-    const itens = lista.filter(c => c.grupo === g);
-    return itens.length ? `<optgroup label="${rot}">${itens.map(op).join('')}</optgroup>` : '';
-  }).join('');
-}
-
-/* ---------- estrutura da página ---------- */
-function shell(rota) {
-  const abas = [['inicio', 'Início'], ['lancamentos', 'Lançar'], ['indicadores', 'Indicadores'], ['planejamento', 'Ano'], ['metas', 'Metas']];
-  $app.innerHTML = `
-    <div class="wrap">
-      <header class="topo">
-        <a class="marca" href="#inicio">${esc(CONFIG.APP_NAME)}</a>
-        <a class="engrenagem ${rota === 'ajustes' ? 'on' : ''}" href="#ajustes" aria-label="Ajustes">${icon('ajustes')}</a>
-      </header>
-      <main id="view"></main>
-    </div>
-    <nav class="abas" aria-label="Principal"><div class="in">
-      ${abas.map(([r, rot]) => `<a href="#${r}" class="${r === rota ? 'on' : ''}" ${r === rota ? 'aria-current="page"' : ''}>${icon(r)}<span>${rot}</span></a>`).join('')}
-    </div></nav>`;
-  return $('#view');
-}
-
-/* ---------- login (os usuários são criados pelo administrador) ---------- */
-function telaLogin() {
-  $app.innerHTML = `
-    <div class="wrap estreito">
-      <header class="topo"><span class="marca">${esc(CONFIG.APP_NAME)}</span></header>
-      <h1 class="titulo">Entre na sua conta</h1>
-      <p class="sub">Acesso restrito. Se ainda não tem usuário, peça ao administrador.</p>
-      <form id="fl" class="form">
-        <label>E-mail <input id="email" type="email" autocomplete="email" required></label>
-        <label>Senha <input id="senha" type="password" autocomplete="current-password" required></label>
-        <p class="erro-msg" id="msg" role="alert"></p>
-        <button class="btn" id="ok">Entrar</button>
+      <form id="login-form" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">E-mail de acesso</label>
+          <input type="email" id="email" required placeholder="seu@email.com"
+            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Senha</label>
+          <input type="password" id="password" required placeholder="••••••••"
+            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" />
+        </div>
+        <p id="login-error" class="text-sm text-rose-600 hidden"></p>
+        <button type="submit" id="login-btn"
+          class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg transition cursor-pointer">
+          Entrar no Ciclo
+        </button>
       </form>
-    </div>`;
-  $('#fl').onsubmit = async e => {
-    e.preventDefault();
-    $('#ok').disabled = true; $('#msg').textContent = '';
-    const r = await sb.auth.signInWithPassword({ email: $('#email').value.trim(), password: $('#senha').value });
-    $('#ok').disabled = false;
-    if (r.error) $('#msg').textContent = r.error.message.includes('Invalid login') ? 'E-mail ou senha incorretos.' : r.error.message;
-  };
-}
+      <p class="text-xs text-center text-slate-400 mt-6">
+        Acesso restrito a usuários autorizados pelo administrador.
+      </p>
+    </div>
+  </div>
 
-/* ---------- gráficos ---------- */
-function escalaY(vals, H, pt, pb) {
-  let lo = Math.min(0, ...vals), hi = Math.max(0, ...vals);
-  if (hi === lo) hi = lo + 1;
-  const f = (hi - lo) * 0.08; lo -= f; hi += f;
-  return v => pt + (H - pt - pb) * (hi - v) / (hi - lo);
-}
-
-// Meta de economia: situação de um valor de economia contra a meta (null se não há meta).
-function statusMeta(econ, meta) {
-  if (!(meta > 0)) return null;
-  return econ >= meta ? { ok: true, dif: econ - meta } : { ok: false, dif: meta - econ };
-}
-
-// Linha de economia acumulada. pts: [{ rot, v, proj, texto }]. op.alvo: valores da linha da meta.
-// Linha cheia = real, tracejada = projeção.
-function graficoLinha(box, pts, op) {
-  const W = 640, H = 230, pl = 8, pr = 8, pt = 26, pb = 26, n = pts.length;
-  const vals = pts.map(p => p.v);
-  const alvo = op.alvo || null;
-  const y = escalaY(alvo ? [...vals, ...alvo] : vals, H, pt, pb);
-  const x = i => pl + (W - pl - pr) * i / (n - 1);
-  const y0 = y(0);
-  let iReal = 0;
-  pts.forEach((p, i) => { if (!p.proj) iReal = i; });
-  const P = i => `${x(i).toFixed(1)} ${y(vals[i]).toFixed(1)}`;
-  const trecho = (a, b) => 'M' + Array.from({ length: b - a + 1 }, (_, k) => P(a + k)).join('L');
-  const area = `${trecho(0, n - 1)}L${x(n - 1).toFixed(1)} ${y0.toFixed(1)}L${x(0).toFixed(1)} ${y0.toFixed(1)}Z`;
-  const rot = i => `<text x="${x(i)}" y="${H - 8}" text-anchor="${i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'}">${pts[i].rot}</text>`;
-  const linhaAlvo = alvo
-    ? `<path class="alvo" d="M${alvo.map((v, i) => `${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join('L')}" fill="none"/>
-       <text x="${W - pr}" y="${(y(alvo[n - 1]) - 6).toFixed(1)}" text-anchor="end">meta ${brl0(alvo[n - 1])}</text>` : '';
-  const mostrarHoje = op.hoje && iReal < n - 1;
-  box.innerHTML = `
-    <svg class="grafico" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(op.aria)}">
-      <defs>
-        <clipPath id="cp${op.id}"><rect x="0" y="0" width="${W}" height="${y0}"/></clipPath>
-        <clipPath id="cn${op.id}"><rect x="0" y="${y0}" width="${W}" height="${H - y0}"/></clipPath>
-      </defs>
-      <path d="${area}" fill="#1F7A4D" fill-opacity=".14" clip-path="url(#cp${op.id})"/>
-      <path d="${area}" fill="#B3261E" fill-opacity=".2" clip-path="url(#cn${op.id})"/>
-      <line class="zero" x1="${pl}" x2="${W - pr}" y1="${y0}" y2="${y0}"/>
-      ${linhaAlvo}
-      ${mostrarHoje ? `<line class="marca-v" x1="${x(iReal)}" x2="${x(iReal)}" y1="${pt - 8}" y2="${H - pb}"/><text x="${x(iReal) + 4}" y="${pt - 11}">hoje</text>` : ''}
-      <path d="${trecho(0, iReal)}" fill="none" stroke="#2B59C3" stroke-width="2.6" stroke-linejoin="round"/>
-      ${iReal < n - 1 ? `<path d="${trecho(iReal, n - 1)}" fill="none" stroke="#2B59C3" stroke-width="2.6" stroke-dasharray="6 5" stroke-linejoin="round"/>` : ''}
-      <circle class="ponto" r="5" fill="#2B59C3" stroke="#fff" stroke-width="2" cx="${x(iReal)}" cy="${y(vals[iReal])}"/>
-      ${rot(0)}${n > 2 ? rot(Math.floor((n - 1) / 2)) : ''}${rot(n - 1)}
-    </svg>
-    <p class="leitura">${esc(pts[iReal].texto)}</p>
-    <div class="leg"><span><i></i>Real</span><span><i class="pt"></i>Previsto</span>${alvo ? '<span><i class="al"></i>Meta</span>' : ''}</div>`;
-  const svg = $('svg', box), ponto = $('.ponto', box), leitura = $('.leitura', box);
-  const mover = ev => {
-    const b = svg.getBoundingClientRect();
-    const px = (ev.clientX - b.left) / b.width * W;
-    const i = Math.max(0, Math.min(n - 1, Math.round((px - pl) / (W - pl - pr) * (n - 1))));
-    ponto.setAttribute('cx', x(i)); ponto.setAttribute('cy', y(vals[i]));
-    leitura.textContent = pts[i].texto;
-  };
-  svg.addEventListener('pointermove', mover);
-  svg.addEventListener('pointerdown', mover);
-}
-
-// Economia de cada mês do ano. Verde: dentro da meta. Âmbar: abaixo da meta. Vermelho: gastou mais do que ganhou.
-// Barra clara = previsto.
-function graficoBarras(box, rows, ano) {
-  const W = 640, H = 230, pl = 8, pr = 8, pt = 22, pb = 26, n = rows.length;
-  const meta = num(rows[0].meta_economia);
-  const vals = rows.map(r => num(r.economia_mes));
-  const y = escalaY(meta > 0 ? [...vals, meta] : vals, H, pt, pb), y0 = y(0);
-  const slot = (W - pl - pr) / n, bw = slot * 0.6;
-  const mesAtual = ano === hojeAno() ? agora.getMonth() + 1 : 0;
-  const corDe = v => v < 0 ? '#B3261E' : (meta > 0 && v < meta) ? '#A86F08' : '#1F7A4D';
-  const barras = rows.map((r, i) => {
-    const v = vals[i], yv = y(v), top = Math.min(y0, yv), h = Math.max(1.5, Math.abs(yv - y0));
-    const cor = corDe(v);
-    const prev = r.situacao === 'projetado', andamento = r.situacao === 'em_andamento';
-    return `<rect x="${(pl + slot * i + (slot - bw) / 2).toFixed(1)}" y="${top.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="3"
-      fill="${cor}" fill-opacity="${prev ? .35 : andamento ? .7 : 1}" ${prev ? `stroke="${cor}" stroke-dasharray="4 3"` : ''}/>
-      <text x="${(pl + slot * i + slot / 2).toFixed(1)}" y="${H - 8}" text-anchor="middle" ${r.mes === mesAtual ? 'style="font-weight:700;fill:#1B2A32"' : ''}>${MES3[r.mes - 1]}</text>`;
-  }).join('');
-  const linhaMeta = meta > 0
-    ? `<line class="alvo" x1="${pl}" x2="${W - pr}" y1="${y(meta)}" y2="${y(meta)}"/><text x="${W - pr}" y="${(y(meta) - 6).toFixed(1)}" text-anchor="end">meta ${brl0(meta)}</text>` : '';
-  const texto = i => {
-    const r = rows[i], sit = r.situacao === 'realizado' ? 'realizado' : r.situacao === 'em_andamento' ? 'em andamento' : 'previsto';
-    const st = statusMeta(vals[i], meta);
-    return `${cap(MESES[r.mes - 1])} (${sit}): economia de ${brl0(vals[i])}${st ? (st.ok ? ', dentro da meta' : ', fora da meta') : ''}`;
-  };
-  const padrao = rows.findIndex(r => r.mes === mesAtual);
-  box.innerHTML = `
-    <svg class="grafico" viewBox="0 0 ${W} ${H}" role="img" aria-label="Economia prevista em cada mês de ${ano}">
-      <line class="zero" x1="${pl}" x2="${W - pr}" y1="${y0}" y2="${y0}"/>
-      ${barras}
-      ${linhaMeta}
-    </svg>
-    <p class="leitura">${esc(texto(padrao >= 0 ? padrao : n - 1))}</p>
-    <div class="leg">${meta > 0 ? '<span><b class="sw" style="background:#1F7A4D"></b>Dentro da meta</span><span><b class="sw" style="background:#A86F08"></b>Abaixo da meta</span>' : '<span><b class="sw" style="background:#1F7A4D"></b>Economizou</span>'}<span><b class="sw" style="background:#B3261E"></b>Gastou mais do que ganhou</span><span>Barra clara: previsto</span></div>`;
-  const svg = $('svg', box), leitura = $('.leitura', box);
-  const mover = ev => {
-    const b = svg.getBoundingClientRect();
-    const px = (ev.clientX - b.left) / b.width * W;
-    leitura.textContent = texto(Math.max(0, Math.min(n - 1, Math.floor((px - pl) / slot))));
-  };
-  svg.addEventListener('pointermove', mover);
-  svg.addEventListener('pointerdown', mover);
-}
-
-/* ---------- meta de economia mensal (formulário compartilhado) ---------- */
-const htmlFormMeta = atual => `
-  <form class="form form-meta">
-    <label>Quanto você quer economizar por mês <input class="meta-in" inputmode="decimal" placeholder="0,00" value="${atual > 0 ? valorInput(atual) : ''}" required></label>
-    <button class="btn">${atual > 0 ? 'Salvar meta' : 'Definir meta'}</button>
-  </form>`;
-function ligarFormMeta(el) {
-  const f = $('.form-meta', el);
-  if (!f) return;
-  f.onsubmit = async e => {
-    e.preventDefault();
-    const v = parseValor($('.meta-in', f).value);
-    if (!(v >= 0)) return toast('Informe um valor válido.', true);
-    await db(sb.from('perfis').update({ meta_economia_mensal: v }).eq('user_id', state.user.id));
-    state.perfil = null;
-    toast('Meta salva.');
-    route();
-  };
-}
-
-/* ---------- início: economia do mês e do ano contra a meta ---------- */
-async function vInicio(el) {
-  el.innerHTML = '<p class="carregando">Calculando…</p>';
-  await sb.rpc('materializar_recorrencias');
-  const ano = agora.getFullYear(), mes = agora.getMonth() + 1;
-  const [ind, plano, diario] = await Promise.all([
-    db(sb.rpc('indicadores', { p_ano: ano, p_mes: mes })),
-    db(sb.rpc('planejamento_anual', { p_ano: ano })),
-    db(sb.rpc('economia_diaria_mes'))
-  ]);
-
-  if (!ind.tem_dados) {
-    el.innerHTML = `
-      <h1 class="titulo">Bem-vindo</h1>
-      <div class="vazio">
-        <p>Seu painel aparece assim que você lançar o primeiro ganho ou gasto. Comece pelo salário e pelas contas que se repetem todo mês: escolha “Todo mês” em Repetição e elas ficam lançadas sozinhas.</p>
-        <a class="btn" href="#lancamentos">Fazer o primeiro lançamento</a>
-      </div>`;
-    return;
-  }
-
-  const meta = num(ind.meta_economia);
-  const lm = plano.find(r => r.mes === mes);
-  const econFim = num(lm.economia_mes);
-  const econAgora = num(ind.economia);
-  const st = statusMeta(econFim, meta);
-  const soma = f => plano.reduce((s, r) => s + f(r), 0);
-  const recAno = soma(r => num(r.receitas_real) + num(r.receitas_prev));
-  const desAno = soma(r => num(r.despesas_real) + num(r.despesas_fixas_prev) + num(r.despesas_var_est));
-  const econAno = soma(r => num(r.economia_mes));
-  const mesesOk = meta > 0 ? plano.filter(r => num(r.economia_mes) >= meta).length : 0;
-  const rendaMes = num(lm.receitas_real) + num(lm.receitas_prev);
-  const gastoMes = num(lm.despesas_real) + num(lm.despesas_fixas_prev) + num(lm.despesas_var_est);
-  const entraAinda = num(lm.receitas_prev);
-  const saiAinda = num(lm.despesas_fixas_prev) + num(lm.despesas_var_est);
-
-  let h1, sub, risco = false;
-  if (st) {
-    risco = !st.ok;
-    h1 = st.ok ? 'Você está dentro da meta de economia.' : 'Você está fora da meta de economia.';
-    sub = st.ok
-      ? `A previsão para ${MESES[mes - 1]} é economizar ${brl0(econFim)}, ${brl0(st.dif)} acima da meta de ${brl0(meta)}.`
-      : (econFim >= 0
-        ? `A previsão para ${MESES[mes - 1]} é economizar ${brl0(econFim)}. Faltam ${brl0(st.dif)} para a meta de ${brl0(meta)}.`
-        : `A previsão para ${MESES[mes - 1]} é gastar ${brl0(-econFim)} a mais do que você ganha. Faltam ${brl0(st.dif)} para a meta de ${brl0(meta)}.`);
-  } else {
-    risco = econFim < 0;
-    h1 = econFim >= 0 ? `Você deve economizar ${brl0(econFim)} em ${MESES[mes - 1]}.` : `Você deve gastar ${brl0(-econFim)} a mais do que ganha em ${MESES[mes - 1]}.`;
-    sub = 'Defina uma meta de economia mensal logo abaixo para acompanhar se está dentro dela.';
-  }
-  if (rendaMes === 0) sub += ' Cadastre seu salário como fixo para a previsão considerar sua renda.';
-
-  const alertas = [];
-  plano.filter(r => r.mes > mes && num(r.economia_mes) < 0).slice(0, 3).forEach(r => alertas.push({
-    nivel: 'critico', t: `Previsão de gastar mais do que ganha em ${MESES[r.mes - 1]}`, x: `A economia prevista é de ${brl0(r.economia_mes)}.`
-  }));
-  if (meta > 0) {
-    const fora = plano.filter(r => r.mes > mes && num(r.economia_mes) >= 0 && num(r.economia_mes) < meta);
-    if (fora.length) alertas.push({ nivel: 'aviso', t: 'Meses previstos abaixo da meta', x: fora.map(r => MES3[r.mes - 1]).join(', ') + '.' });
-  }
-  (ind.categorias || []).filter(c => num(c.pct) >= 80).forEach(c => alertas.push({
-    nivel: num(c.pct) >= 100 ? 'critico' : 'aviso',
-    t: `${num(c.pct) >= 100 ? 'Limite estourado' : 'Perto do limite'}: ${c.nome}`,
-    x: `Você usou ${num(c.pct)}% do limite de ${MESES[mes - 1]}.`
-  }));
-
-  const pct = meta > 0 ? Math.max(0, Math.min(100, econFim / meta * 100)) : 0;
-
-  el.innerHTML = `
-    <div class="manchete ${risco ? 'risco' : ''}"><h1>${esc(h1)}</h1><p>${esc(sub)}</p></div>
-
-    <section class="sec">
-      <h2>Meta de economia de ${MESES[mes - 1]}</h2>
-      ${meta > 0 ? `
-        <dl class="par">
-          <dt>Meta do mês</dt><dd>${brl0(meta)}</dd>
-          <dt>Economizado até agora</dt><dd class="${econAgora < 0 ? 'neg' : ''}">${brl(econAgora)}</dd>
-          <dt>Previsto para o fim do mês</dt><dd class="forte ${econFim < 0 ? 'neg' : ''}">${brl(econFim)}</dd>
-          <dt>Situação</dt><dd class="${st.ok ? 'pos' : 'neg'}">${st.ok ? `Dentro da meta (+${brl0(st.dif)})` : `Fora da meta (faltam ${brl0(st.dif)})`}</dd>
-        </dl>
-        <div class="barra ${st.ok ? '' : econFim < 0 ? 'estouro' : 'aviso'}" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(pct)}" aria-label="Previsão de economia em relação à meta"><i style="width:${pct}%"></i></div>
-        <details class="novo"><summary>Alterar meta</summary>${htmlFormMeta(meta)}</details>`
-        : `<p class="muted" style="margin-top:-4px">Diga quanto quer guardar por mês e o app mostra se você está dentro ou fora da meta.</p>${htmlFormMeta(0)}`}
-    </section>
-
-    <section class="sec">
-      <h2>Economia acumulada em ${MESES[mes - 1]}</h2>
-      <div id="gd"></div>
-    </section>
-
-    ${alertas.length ? `<section class="sec"><h2>Alertas</h2><ul class="lista">
-      ${alertas.map(a => `<li><div class="alerta ${a.nivel}"><strong>${esc(a.t)}</strong>${esc(a.x)}</div></li>`).join('')}</ul></section>` : ''}
-
-    <section class="sec">
-      <h2>${cap(MESES[mes - 1])}</h2>
-      <dl class="par">
-        <dt>Renda fixa recebida</dt><dd>${brl(ind.renda_fixa)}</dd>
-        <dt>Outros ganhos</dt><dd>${brl(ind.renda_extra)}</dd>
-        <dt>Gastos até agora</dt><dd>${brl(ind.despesas)}</dd>
-        <dt>Ainda previsto para entrar</dt><dd>${brl(entraAinda)}</dd>
-        <dt>Ainda previsto para sair</dt><dd>${brl(saiAinda)}</dd>
-        <dt>Renda prevista do mês</dt><dd>${brl(rendaMes)}</dd>
-        <dt>Gastos previstos do mês</dt><dd>${brl(gastoMes)}</dd>
-        <dt>Economia prevista</dt><dd class="forte ${econFim < 0 ? 'neg' : ''}">${brl(econFim)}</dd>
-      </dl>
-    </section>
-
-    <section class="sec">
-      <h2>${ano}</h2>
-      <dl class="par">
-        <dt>Receitas (realizadas e previstas)</dt><dd>${brl0(recAno)}</dd>
-        <dt>Despesas (realizadas e previstas)</dt><dd>${brl0(desAno)}</dd>
-        <dt>Economia prevista no ano</dt><dd class="forte ${econAno < 0 ? 'neg' : ''}">${brl0(econAno)}</dd>
-        ${meta > 0 ? `<dt>Meta do ano (${brl0(meta)} × 12)</dt><dd>${brl0(meta * 12)}</dd>
-        <dt>Meses dentro da meta</dt><dd class="${mesesOk >= 12 ? 'pos' : ''}">${mesesOk} de 12</dd>` : ''}
-      </dl>
-      <p class="acoes"><a class="btn sec2 mini" href="#planejamento">Ver o ano mês a mês</a><a class="btn sec2 mini" href="#indicadores">Ver indicadores</a></p>
-    </section>`;
-
-  const diasMes = diario.length;
-  graficoLinha($('#gd', el), diario.map(r => ({
-    rot: fmtData(r.dia), v: num(r.acumulado), proj: r.projetado,
-    texto: `${fmtData(r.dia)}: economia acumulada de ${brl(r.acumulado)}${r.projetado ? ' (previsto)' : ''}`
-  })), { id: 'd', hoje: true, alvo: meta > 0 ? Array(diasMes).fill(meta) : null, aria: 'Economia acumulada no mês, real até hoje e prevista depois, com a linha da meta' });
-  ligarFormMeta(el);
-}
-
-/* ---------- lançamentos: lançar, histórico do mês e fixos ---------- */
-async function vLancamentos(el) {
-  await garantirCats();
-  const f = state.lanc;
-  const ini = `${f.a}-${pad(f.m)}-01`, fim = iso(new Date(f.a, f.m, 0));
-  const [recentes, rows, fixos] = await Promise.all([
-    db(sb.from('transacoes').select('descricao,categoria_id,tipo,forma_pagamento').order('criado_em', { ascending: false }).limit(300)),
-    db(sb.from('transacoes').select('id,tipo,descricao,valor,data,forma_pagamento,recorrencia_id,categorias(nome)')
-      .gte('data', ini).lte('data', fim).order('data', { ascending: false }).order('criado_em', { ascending: false })),
-    db(sb.from('recorrencias').select('*,categorias(nome)').order('tipo', { ascending: false }).order('descricao'))
-  ]);
-  const memoria = new Map();
-  recentes.forEach(r => { const k = (r.descricao || '').toLowerCase().replace(/ \(\d+\/\d+\)$/, ''); if (k && !memoria.has(k)) memoria.set(k, r); });
-  const ent = rows.filter(r => r.tipo === 'receita').reduce((s, r) => s + num(r.valor), 0);
-  const sai = rows.filter(r => r.tipo === 'despesa').reduce((s, r) => s + num(r.valor), 0);
-  const h = hoje();
-  const quando = r => r.frequencia === 'mensal' ? `todo dia ${r.dia_do_mes}` : `todo ano, ${r.dia_do_mes} de ${MESES[r.mes_do_ano - 1]}`;
-
-  el.innerHTML = `
-    <h1 class="titulo">Lançamentos</h1>
-    <p class="sub">Lance seus ganhos e gastos. Marque como fixo o que se repete todo mês, como salário e aluguel: ele passa a ser lançado sozinho.</p>
-    <form id="fl" class="form">
-      <fieldset class="seg"><legend class="sr">Tipo</legend>
-        <input type="radio" name="tipo" id="t-d" value="despesa" checked><label for="t-d">Gasto</label>
-        <input type="radio" name="tipo" id="t-r" value="receita"><label for="t-r">Ganho</label>
-      </fieldset>
-      <label><span id="rot-valor">Valor</span> <input id="valor" inputmode="decimal" autocomplete="off" placeholder="0,00" required></label>
-      <label>Descrição <input id="desc" autocomplete="off" list="sug" placeholder="Ex.: mercado, aluguel, salário"></label>
-      <datalist id="sug">${[...new Set([...memoria.values()].map(r => r.descricao.replace(/ \(\d+\/\d+\)$/, '')))].slice(0, 40).map(d => `<option value="${esc(d)}">`).join('')}</datalist>
-      <label>Categoria <select id="cat"></select></label>
-      <div class="dupla">
-        <label><span id="rot-data">Data</span> <input type="date" id="data" value="${h}" required></label>
-        <label>Pagamento <select id="forma">${Object.entries(FORMAS).filter(([k]) => k !== 'recorrente').map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select></label>
-      </div>
-      <label>Repetição
-        <select id="rep"><option value="nao">Não se repete</option><option value="mensal">Todo mês (fixo)</option><option value="anual">Todo ano</option></select>
-      </label>
-      <p class="muted pequeno" id="dica-rep" hidden></p>
-      <label id="lb-parc" hidden>Número de parcelas <input type="number" id="parc" min="1" max="48" value="1"></label>
-      <button class="btn" id="salvar">Salvar lançamento</button>
-    </form>
-
-    <section class="sec">
-      <h2>Histórico</h2>
-      <div class="nav-mes">
-        <button id="ant" aria-label="Mês anterior">‹</button>
-        <strong>${cap(MESES[f.m - 1])} de ${f.a}</strong>
-        <button id="prox" aria-label="Próximo mês">›</button>
-      </div>
-      <dl class="par" style="margin:12px 0 8px"><dt>Entrou</dt><dd class="pos">${brl(ent)}</dd><dt>Saiu</dt><dd>${brl(sai)}</dd></dl>
-      ${rows.length ? `<ul class="lista">${rows.map(r => `
-        <li class="linha">
-          <div><strong>${esc(r.descricao || (r.tipo === 'receita' ? 'Ganho' : 'Gasto'))}</strong>
-            <span class="meta">${esc(r.categorias?.nome || 'Sem categoria')} · ${FORMAS[r.forma_pagamento] || ''} · ${fmtData(r.data)}${r.data > h ? ' · agendado' : ''}</span></div>
-          <span class="val ${r.tipo === 'receita' ? 'pos' : ''}">${r.tipo === 'receita' ? '+' : '−'}${brl(r.valor)}</span>
-          <button class="x" data-del="${r.id}" data-rec="${r.recorrencia_id ? 1 : 0}" aria-label="Excluir lançamento">×</button>
-        </li>`).join('')}</ul>` : '<p class="vazio">Nenhum lançamento neste mês.</p>'}
-    </section>
-
-    <section class="sec">
-      <h2>Gastos e ganhos fixos</h2>
-      ${fixos.length ? `<ul class="lista">${fixos.map(r => `
-        <li>
-          <div class="linha" style="grid-template-columns:1fr auto">
-            <div><strong>${esc(r.descricao)}</strong>
-              <span class="meta">${r.tipo === 'receita' ? 'Ganho' : 'Gasto'} · ${quando(r)}${r.categorias?.nome ? ' · ' + esc(r.categorias.nome) : ''}${r.ativo ? '' : ' · pausado'}</span></div>
-            <span class="val ${r.tipo === 'receita' ? 'pos' : ''}">${r.tipo === 'receita' ? '+' : '−'}${brl(r.valor)}</span>
+  <!-- DASHBOARD PRINCIPAL -->
+  <div id="app-screen" class="hidden">
+    <!-- Navbar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white">
+            <i data-lucide="refresh-cw" class="w-5 h-5"></i>
           </div>
-          <div class="acoes">
-            <button class="btn sec2 mini" data-fx="valor" data-id="${r.id}" data-v="${r.valor}">Alterar valor</button>
-            <button class="btn sec2 mini" data-fx="pausa" data-id="${r.id}" data-ativo="${r.ativo}">${r.ativo ? 'Pausar' : 'Reativar'}</button>
-            <button class="btn perigo mini" data-fx="del" data-id="${r.id}">Excluir</button>
+          <span class="text-xl font-bold text-slate-900">Ciclo</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span id="user-email-display" class="text-sm text-slate-500 hidden sm:inline"></span>
+          <button onclick="logout()" class="flex items-center gap-1.5 text-sm text-slate-600 hover:text-rose-600 font-medium cursor-pointer">
+            <i data-lucide="log-out" class="w-4 h-4"></i> Sair
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+      <!-- 4. FILTROS DE GESTÃO -->
+      <section class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-end gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Mês</label>
+          <select id="filter-month" onchange="loadData()" class="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
+            <option value="all">Todos os meses</option>
+            <option value="1">Janeiro</option>
+            <option value="2">Fevereiro</option>
+            <option value="3">Março</option>
+            <option value="4">Abril</option>
+            <option value="5">Maio</option>
+            <option value="6">Junho</option>
+            <option value="7">Julho</option>
+            <option value="8">Agosto</option>
+            <option value="9">Setembro</option>
+            <option value="10">Outubro</option>
+            <option value="11">Novembro</option>
+            <option value="12">Dezembro</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Ano</label>
+          <select id="filter-year" onchange="loadData()" class="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
+            <option value="2025">2025</option>
+            <option value="2026" selected>2026</option>
+            <option value="2027">2027</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Tipo</label>
+          <select id="filter-type" onchange="applyLocalFilters()" class="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
+            <option value="all">Todos</option>
+            <option value="income">Ganhos</option>
+            <option value="expense">Despesas</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Categoria</label>
+          <select id="filter-category" onchange="applyLocalFilters()" class="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
+            <option value="all">Todas</option>
+            <option value="Salário">Salário</option>
+            <option value="Freelance">Freelance</option>
+            <option value="Investimentos">Investimentos</option>
+            <option value="Moradia">Moradia</option>
+            <option value="Alimentação">Alimentação</option>
+            <option value="Transporte">Transporte</option>
+            <option value="Lazer">Lazer</option>
+            <option value="Saúde">Saúde</option>
+            <option value="Outros">Outros</option>
+          </select>
+        </div>
+
+        <div class="flex-1 min-w-[200px]">
+          <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Buscar descrição</label>
+          <input type="text" id="filter-search" oninput="applyLocalFilters()" placeholder="Ex: Supermercado, Aluguel..."
+            class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
+        </div>
+      </section>
+
+      <!-- 1. INDICADORES DE CONTROLE FINANCEIRO -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between text-slate-500 mb-2">
+            <span class="text-sm font-medium">Total de Ganhos</span>
+            <i data-lucide="trending-up" class="w-5 h-5 text-emerald-600"></i>
           </div>
-        </li>`).join('')}</ul>
-        <p class="muted pequeno">Alterar, pausar ou excluir vale daqui para frente. O que já foi lançado fica no histórico.</p>`
-        : '<p class="vazio">Nenhum fixo ainda. Escolha “Todo mês” em Repetição ao lançar o salário, o aluguel ou uma mensalidade.</p>'}
-    </section>`;
+          <p id="kpi-income" class="text-2xl font-bold text-emerald-600">R$ 0,00</p>
+        </div>
 
-  const tipoAtual = () => $('input[name=tipo]:checked', el).value;
-  const refazerCats = sel => { $('#cat', el).innerHTML = `<option value="">Sem categoria</option>${optCats(tipoAtual(), sel)}`; };
-  const ajustar = () => {
-    const rep = $('#rep', el).value;
-    const parcelavel = tipoAtual() === 'despesa' && $('#forma', el).value === 'credito' && rep === 'nao';
-    $('#lb-parc', el).hidden = !parcelavel;
-    const n = parcelavel ? parseInt($('#parc', el).value, 10) || 1 : 1;
-    $('#rot-valor', el).textContent = n > 1 ? 'Valor de cada parcela' : 'Valor';
-    $('#rot-data', el).textContent = rep === 'nao' ? 'Data' : 'A partir de';
-    const dica = $('#dica-rep', el);
-    dica.hidden = rep === 'nao';
-    dica.textContent = rep === 'mensal' ? 'Será lançado sozinho todo mês, no mesmo dia, a partir da data escolhida.' : 'Será lançado sozinho uma vez por ano, no mesmo dia.';
-  };
-  refazerCats();
-  $$('input[name=tipo]', el).forEach(r => r.addEventListener('change', () => { refazerCats(); ajustar(); }));
-  $('#forma', el).addEventListener('change', ajustar);
-  $('#rep', el).addEventListener('change', ajustar);
-  $('#parc', el).addEventListener('input', ajustar);
-  $('#desc', el).addEventListener('input', e => {
-    const m = memoria.get(e.target.value.trim().toLowerCase());
-    if (!m) return;
-    if (m.tipo !== tipoAtual()) { $(`input[name=tipo][value=${m.tipo}]`, el).checked = true; refazerCats(); }
-    if (m.categoria_id) $('#cat', el).value = m.categoria_id;
-    if (m.forma_pagamento && m.forma_pagamento !== 'recorrente') { $('#forma', el).value = m.forma_pagamento; ajustar(); }
-  });
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between text-slate-500 mb-2">
+            <span class="text-sm font-medium">Total de Despesas</span>
+            <i data-lucide="trending-down" class="w-5 h-5 text-rose-600"></i>
+          </div>
+          <p id="kpi-expense" class="text-2xl font-bold text-rose-600">R$ 0,00</p>
+        </div>
 
-  $('#fl', el).onsubmit = async e => {
-    e.preventDefault();
-    const tipo = tipoAtual();
-    const valor = parseValor($('#valor', el).value);
-    if (!(valor > 0)) return toast('Informe um valor maior que zero.', true);
-    const forma = $('#forma', el).value, rep = $('#rep', el).value;
-    const base = parseISO($('#data', el).value);
-    const catId = $('#cat', el).value || null;
-    const catNome = state.cats.find(c => c.id === catId)?.nome;
-    const desc = $('#desc', el).value.trim() || catNome || (tipo === 'despesa' ? 'Gasto' : 'Ganho');
-    $('#salvar', el).disabled = true;
-    try {
-      if (rep !== 'nao') {
-        await db(sb.from('recorrencias').insert({
-          tipo, descricao: desc, valor, categoria_id: catId, frequencia: rep,
-          dia_do_mes: base.getDate(), mes_do_ano: rep === 'anual' ? base.getMonth() + 1 : null, inicio: iso(base)
-        }));
-        await sb.rpc('materializar_recorrencias');
-        toast(rep === 'mensal' ? 'Fixo salvo. Ele entra sozinho todo mês.' : 'Lançamento anual salvo.');
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between text-slate-500 mb-2">
+            <span class="text-sm font-medium">Saldo do Período</span>
+            <i data-lucide="wallet" class="w-5 h-5 text-slate-700"></i>
+          </div>
+          <p id="kpi-balance" class="text-2xl font-bold text-slate-900">R$ 0,00</p>
+          <p id="kpi-savings-rate" class="text-xs text-slate-500 mt-1">Taxa de economia: 0%</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between text-slate-500 mb-2">
+            <span class="text-sm font-medium">Meta de Economia</span>
+            <i data-lucide="target" class="w-5 h-5 text-indigo-600"></i>
+          </div>
+          <p id="kpi-goal" class="text-2xl font-bold text-indigo-600">R$ 0,00</p>
+          <div class="w-full bg-slate-100 h-2 rounded-full mt-2 overflow-hidden">
+            <div id="kpi-goal-bar" class="bg-indigo-600 h-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+          <p id="kpi-goal-status" class="text-xs text-slate-500 mt-1">0% atingido</p>
+        </div>
+      </section>
+
+      <!-- LANÇAMENTOS E METAS -->
+      <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- 2. LANÇAMENTO DE GANHOS E DESPESAS -->
+        <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-600"></i> Novo Lançamento
+          </h2>
+          <form id="transaction-form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <div class="lg:col-span-2">
+              <input type="text" id="t-desc" required placeholder="Descrição (ex: Salário)"
+                class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
+            </div>
+            <div>
+              <input type="number" step="0.01" id="t-amount" required placeholder="Valor (R$)"
+                class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
+            </div>
+            <div>
+              <select id="t-type" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
+                <option value="expense">Despesa (-)</option>
+                <option value="income">Ganho (+)</option>
+              </select>
+            </div>
+            <div>
+              <select id="t-category" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
+                <option value="Alimentação">Alimentação</option>
+                <option value="Moradia">Moradia</option>
+                <option value="Transporte">Transporte</option>
+                <option value="Lazer">Lazer</option>
+                <option value="Saúde">Saúde</option>
+                <option value="Salário">Salário</option>
+                <option value="Freelance">Freelance</option>
+                <option value="Investimentos">Investimentos</option>
+                <option value="Outros">Outros</option>
+              </select>
+            </div>
+            <div class="lg:col-span-2">
+              <input type="date" id="t-date" required
+                class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
+            </div>
+            <div class="lg:col-span-3">
+              <button type="submit"
+                class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition cursor-pointer">
+                Adicionar Lançamento
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- 3. LANÇAMENTO DE METAS DE ECONOMIA -->
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <i data-lucide="flag" class="w-5 h-5 text-indigo-600"></i> Definir Meta Mensal
+          </h2>
+          <form id="goal-form" class="space-y-3">
+            <div class="grid grid-cols-2 gap-2">
+              <select id="g-month" required class="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
+                <option value="1">Janeiro</option>
+                <option value="2">Fevereiro</option>
+                <option value="3">Março</option>
+                <option value="4">Abril</option>
+                <option value="5">Maio</option>
+                <option value="6">Junho</option>
+                <option value="7">Julho</option>
+                <option value="8">Agosto</option>
+                <option value="9">Setembro</option>
+                <option value="10">Outubro</option>
+                <option value="11">Novembro</option>
+                <option value="12">Dezembro</option>
+              </select>
+              <select id="g-year" required class="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
+                <option value="2025">2025</option>
+                <option value="2026" selected>2026</option>
+                <option value="2027">2027</option>
+              </select>
+            </div>
+            <input type="number" step="0.01" id="g-amount" required placeholder="Valor da meta (R$)"
+              class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
+            <button type="submit"
+              class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition cursor-pointer">
+              Salvar Meta
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- GRÁFICO E TABELA DE EXTRATO -->
+      <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Gráfico por Categoria -->
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <h3 class="text-base font-bold text-slate-900 mb-4">Despesas por Categoria</h3>
+          <div class="relative h-64 w-full flex items-center justify-center">
+            <canvas id="category-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Lista de Transações -->
+        <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+            <h3 class="text-base font-bold text-slate-900">Extrato de Movimentações</h3>
+            <span id="records-count" class="text-xs text-slate-500">0 registros</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
+                <tr>
+                  <th class="px-6 py-3">Data</th>
+                  <th class="px-6 py-3">Descrição</th>
+                  <th class="px-6 py-3">Categoria</th>
+                  <th class="px-6 py-3 text-right">Valor</th>
+                  <th class="px-6 py-3 text-center">Ação</th>
+                </tr>
+              </thead>
+              <tbody id="transactions-list" class="divide-y divide-slate-100">
+                <!-- Preenchido via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // =========================================================================
+    // CONFIGURAÇÃO DO SUPABASE (Substitua pelos dados do seu projeto)
+    // =========================================================================
+    const SUPABASE_URL = 'https://vwxeulgzvdkigrrvmutq.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_UXwWHP8ZaHvG4Ug5cvpRug_Olw7y9CM';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let allTransactions = [];
+    let currentGoals = [];
+    let chartInstance = null;
+
+    // Inicialização
+    lucide.createIcons();
+    const today = new Date();
+    document.getElementById('t-date').valueAsDate = today;
+    document.getElementById('filter-month').value = String(today.getMonth() + 1);
+    document.getElementById('filter-year').value = String(today.getFullYear());
+    document.getElementById('g-month').value = String(today.getMonth() + 1);
+    document.getElementById('g-year').value = String(today.getFullYear());
+
+    // Verifica sessão ativa
+    async function checkAuth() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        showApp(session.user);
       } else {
-        const n = (tipo === 'despesa' && forma === 'credito') ? Math.max(1, parseInt($('#parc', el).value, 10) || 1) : 1;
-        const grupo = n > 1 ? crypto.randomUUID() : null;
-        const linhas = Array.from({ length: n }, (_, i) => ({
-          tipo, valor, descricao: n > 1 ? `${desc} (${i + 1}/${n})` : desc, data: iso(addMeses(base, i)),
-          categoria_id: catId, forma_pagamento: forma,
-          parcela_n: n > 1 ? i + 1 : null, parcela_total: n > 1 ? n : null, grupo_parcela: grupo
-        }));
-        await db(sb.from('transacoes').insert(linhas));
-        toast(n > 1 ? `Salvo em ${n} parcelas.` : (tipo === 'despesa' ? 'Gasto salvo.' : 'Ganho salvo.'));
+        document.getElementById('login-screen').classList.remove('hidden');
+        document.getElementById('app-screen').classList.add('hidden');
       }
-      state.lanc = { a: base.getFullYear(), m: base.getMonth() + 1 };
-      state.foco = true;
-      route();
-    } finally { $('#salvar', el).disabled = false; }
-  };
-
-  const mudarMes = d => { const x = new Date(f.a, f.m - 1 + d, 1); state.lanc = { a: x.getFullYear(), m: x.getMonth() + 1 }; route(); };
-  $('#ant', el).onclick = () => mudarMes(-1);
-  $('#prox', el).onclick = () => mudarMes(1);
-
-  $$('[data-del]', el).forEach(b => b.onclick = async () => {
-    const aviso = b.dataset.rec === '1'
-      ? 'Excluir este lançamento? Ele vem de um fixo e volta a aparecer. Para parar de vez, pause o fixo.'
-      : 'Excluir este lançamento?';
-    if (!confirm(aviso)) return;
-    await db(sb.from('transacoes').delete().eq('id', b.dataset.del));
-    toast('Lançamento excluído.');
-    route();
-  });
-  $$('[data-fx]', el).forEach(b => b.onclick = async () => {
-    const id = b.dataset.id;
-    if (b.dataset.fx === 'valor') {
-      const v = parseValor(prompt('Novo valor (vale a partir do próximo lançamento):', valorInput(b.dataset.v)) || '');
-      if (!(v > 0)) return;
-      await db(sb.from('recorrencias').update({ valor: v }).eq('id', id));
-      toast('Valor alterado.');
-    } else if (b.dataset.fx === 'pausa') {
-      await db(sb.from('recorrencias').update({ ativo: b.dataset.ativo !== 'true' }).eq('id', id));
-    } else {
-      if (!confirm('Excluir este fixo? Os lançamentos que ele já gerou continuam no histórico.')) return;
-      await db(sb.from('recorrencias').delete().eq('id', id));
     }
-    route();
-  });
-  if (state.foco) { state.foco = false; $('#valor', el).focus(); }
-}
 
-/* ---------- indicadores ---------- */
-async function vIndicadores(el) {
-  await carregarAnoMin();
-  const f = state.ind;
-  const [ind, plano] = await Promise.all([
-    db(sb.rpc('indicadores', { p_ano: f.a, p_mes: f.m })),
-    db(sb.rpc('planejamento_anual', { p_ano: f.a }))
-  ]);
-  const lm = plano.find(r => r.mes === f.m);
-  const sit = lm.situacao;
-  const meta = num(ind.meta_economia);
-  const econ = num(lm.economia_mes);
-  const st = statusMeta(econ, meta);
-  const rendaPrev = num(lm.receitas_real) + num(lm.receitas_prev);
-  const gastoPrev = num(lm.despesas_real) + num(lm.despesas_fixas_prev) + num(lm.despesas_var_est);
-  const comp = ind.comprometimento_pct == null ? null : num(ind.comprometimento_pct);
-  const cats = ind.categorias || [];
-  const pct = meta > 0 ? Math.max(0, Math.min(100, econ / meta * 100)) : 0;
-
-  el.innerHTML = `
-    <h1 class="titulo">Indicadores</h1>
-    <div class="filtro">
-      <label>Ano <select id="fa">${optAnos(f.a)}</select></label>
-      <label>Mês <select id="fm">${optMeses(f.m)}</select></label>
-    </div>
-
-    <section class="sec">
-      <h2>Economia de ${MESES[f.m - 1]} de ${f.a}</h2>
-      <dl class="par">
-        <dt>Meta de economia</dt><dd>${meta > 0 ? brl0(meta) : 'não definida'}</dd>
-        <dt>${sit === 'realizado' ? 'Você economizou' : 'Economia prevista no fim do mês'}</dt><dd class="forte ${econ < 0 ? 'neg' : ''}">${brl(econ)}</dd>
-        ${st ? `<dt>Situação</dt><dd class="${st.ok ? 'pos' : 'neg'}">${st.ok ? `Dentro da meta (+${brl0(st.dif)})` : `Fora da meta (faltam ${brl0(st.dif)})`}</dd>` : ''}
-      </dl>
-      ${st ? `<div class="barra ${st.ok ? '' : econ < 0 ? 'estouro' : 'aviso'}"><i style="width:${pct}%"></i></div>` : '<p class="muted pequeno">Defina a meta em <a href="#metas">Metas</a> para ver se está dentro ou fora.</p>'}
-    </section>
-
-    <section class="sec">
-      <h2>Renda e gastos</h2>
-      <dl class="par">
-        ${sit === 'projetado' ? '' : `
-        <dt>Renda fixa recebida</dt><dd>${brl(ind.renda_fixa)}</dd>
-        <dt>Outros ganhos</dt><dd>${brl(ind.renda_extra)}</dd>
-        <dt>Gastos</dt><dd>${brl(ind.despesas)}</dd>
-        ${num(ind.investido) > 0 ? `<dt>Investido</dt><dd>${brl(ind.investido)}</dd>` : ''}
-        <dt>Parte da renda que você guardou</dt><dd>${ind.taxa_poupanca == null ? 'sem renda no mês' : num(ind.taxa_poupanca).toFixed(0) + '%'}</dd>`}
-        ${sit === 'realizado' ? '' : `
-        <dt>Renda prevista do mês</dt><dd>${brl(rendaPrev)}</dd>
-        <dt>Gastos previstos do mês</dt><dd>${brl(gastoPrev)}</dd>`}
-      </dl>
-    </section>
-
-    ${sit === 'projetado' ? '' : `
-    <section class="sec">
-      <h2>Gastos por categoria</h2>
-      ${cats.length ? `<ul class="lista">${cats.map(c => {
-        const p = c.pct == null ? null : num(c.pct);
-        const cls = p == null ? '' : p >= 100 ? 'estouro' : p >= 80 ? 'aviso' : '';
-        return `<li><div class="cat-topo"><span>${esc(c.nome)}</span><span>${brl0(c.gasto)}${num(c.orcamento) > 0 ? ` de ${brl0(c.orcamento)}` : ''}</span></div>
-          ${p == null ? '' : `<div class="barra ${cls}"><i style="width:${Math.min(100, p)}%"></i></div>`}</li>`;
-      }).join('')}</ul>` : '<p class="vazio">Nenhum gasto neste mês.</p>'}
-      ${cats.some(c => num(c.orcamento) > 0) ? '' : '<p class="muted pequeno">Defina limites mensais em <a href="#ajustes">Ajustes</a> para receber avisos antes de estourar.</p>'}
-    </section>
-
-    ${(ind.variacoes || []).length ? `<section class="sec"><h2>O que mudou nos seus gastos</h2><ul class="lista">
-      ${ind.variacoes.map(v => `<li>${esc(v.nome)}: ${brl0(v.atual)} neste mês, ${num(v.variacao_pct)}% acima da média de ${brl0(v.media)} dos 3 meses anteriores.</li>`).join('')}</ul></section>` : ''}
-
-    ${(ind.maiores_gastos || []).length ? `<section class="sec"><h2>Maiores gastos do mês</h2><ul class="lista">
-      ${ind.maiores_gastos.map(g => `<li class="linha" style="grid-template-columns:1fr auto"><div><strong>${esc(g.descricao || 'Gasto')}</strong><span class="meta">${esc(g.categoria || 'Sem categoria')} · ${fmtData(g.data)}</span></div><span class="val">${brl(g.valor)}</span></li>`).join('')}</ul></section>` : ''}`}
-
-    <section class="sec">
-      <h2>Sua base fixa</h2>
-      <dl class="par">
-        <dt>Renda fixa mensal</dt><dd>${brl(ind.renda_fixa_mensal)}</dd>
-        <dt>Gastos fixos mensais</dt><dd>${brl(ind.fixas_mensais)}</dd>
-        <dt>Renda fixa comprometida</dt><dd>${comp == null ? 'cadastre seu salário como fixo' : comp.toFixed(0) + '%'}</dd>
-      </dl>
-      ${comp == null ? '' : `<div class="barra ${comp >= 80 ? 'estouro' : comp >= 60 ? 'aviso' : ''}" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.min(100, comp)}" aria-label="Renda fixa comprometida"><i style="width:${Math.min(100, comp)}%"></i></div>`}
-      <dl class="par" style="margin-top:16px">
-        <dt>Gasto médio por mês (últimos 90 dias)</dt><dd>${brl0(ind.gasto_medio_mensal)}</dd>
-      </dl>
-    </section>`;
-
-  $('#fa', el).onchange = e => { state.ind.a = parseInt(e.target.value, 10); route(); };
-  $('#fm', el).onchange = e => { state.ind.m = parseInt(e.target.value, 10); route(); };
-}
-
-/* ---------- planejamento anual ---------- */
-async function vPlanejamento(el) {
-  await carregarAnoMin();
-  await sb.rpc('materializar_recorrencias');
-  const ano = state.plano.a;
-  const rows = await db(sb.rpc('planejamento_anual', { p_ano: ano }));
-  const meta = num(rows[0].meta_economia);
-  const soma = f => rows.reduce((s, r) => s + f(r), 0);
-  const recAno = soma(r => num(r.receitas_real) + num(r.receitas_prev));
-  const desAno = soma(r => num(r.despesas_real) + num(r.despesas_fixas_prev) + num(r.despesas_var_est));
-  const econAno = soma(r => num(r.economia_mes));
-  const mesesOk = meta > 0 ? rows.filter(r => num(r.economia_mes) >= meta).length : 0;
-  const mesAtual = ano === hojeAno() ? agora.getMonth() + 1 : 0;
-
-  el.innerHTML = `
-    <h1 class="titulo">Planejamento do ano</h1>
-    <p class="sub">Renda fixa, outros ganhos e gastos, mês a mês, contra a sua meta de economia. Para planejar, lance ganhos e gastos com datas futuras ou cadastre fixos.</p>
-    <div class="nav-mes">
-      <button id="ant" aria-label="Ano anterior" ${ano <= state.anoMin ? 'disabled' : ''}>‹</button>
-      <label class="sr" for="sel-ano">Ano</label>
-      <select id="sel-ano" style="min-height:44px;padding:0 14px;border:1px solid #BCC5BB;border-radius:8px;background:#fff;font-weight:600;font-size:18px">${optAnos(ano)}</select>
-      <button id="prox" aria-label="Próximo ano">›</button>
-    </div>
-
-    <section class="sec" style="border-top:0;margin-top:8px">
-      <h2>Economia por mês</h2>
-      <div id="gb"></div>
-    </section>
-
-    <section class="sec">
-      <h2>Economia acumulada em ${ano}</h2>
-      <div id="gl"></div>
-    </section>
-
-    <section class="sec">
-      <h2>Resumo de ${ano}</h2>
-      <dl class="par">
-        <dt>Receitas</dt><dd>${brl0(recAno)}</dd>
-        <dt>Despesas</dt><dd>${brl0(desAno)}</dd>
-        <dt>Economia do ano</dt><dd class="forte ${econAno < 0 ? 'neg' : ''}">${brl0(econAno)}</dd>
-        ${meta > 0 ? `<dt>Meta do ano (${brl0(meta)} × 12)</dt><dd>${brl0(meta * 12)}</dd>
-        <dt>Meses dentro da meta</dt><dd class="${mesesOk >= 12 ? 'pos' : ''}">${mesesOk} de 12</dd>` : '<dt>Meta de economia</dt><dd><a href="#metas">definir</a></dd>'}
-      </dl>
-    </section>
-
-    <section class="sec">
-      <h2>Mês a mês</h2>
-      <ul class="lista">${rows.map(r => {
-        const ent = num(r.receitas_real) + num(r.receitas_prev);
-        const sai = num(r.despesas_real) + num(r.despesas_fixas_prev) + num(r.despesas_var_est);
-        const e = num(r.economia_mes), st = statusMeta(e, meta);
-        const sit = r.situacao === 'realizado' ? 'Realizado' : r.situacao === 'em_andamento' ? 'Em andamento' : 'Previsto';
-        return `<li class="mes-linha linha" style="grid-template-columns:1fr auto">
-          <div><strong>${cap(MESES[r.mes - 1])}</strong><span class="tag ${r.mes === mesAtual ? 'atual' : ''}">${sit}</span>
-            <span class="meta">Renda ${brl0(ent)} · Gastos ${brl0(sai)}${num(r.despesas_var_est) > 0 ? ` (inclui ${brl0(r.despesas_var_est)} estimados do dia a dia)` : ''}</span>
-            <span class="meta">Acumulado no ano: ${brl0(r.economia_acumulada)}</span></div>
-          <div style="text-align:right"><span class="val ${e < 0 ? 'neg' : ''}">${brl0(e)}</span><span class="meta">economia</span>
-            ${st ? `<span class="meta ${st.ok ? 'pos' : 'neg'}" style="font-weight:600">${st.ok ? 'Dentro da meta' : 'Fora da meta'}</span>` : ''}</div>
-        </li>`;
-      }).join('')}</ul>
-      <p class="muted pequeno">Meses futuros somam fixos, parcelas e lançamentos agendados, mais uma estimativa dos seus gastos do dia a dia baseada nos últimos 60 dias. Investimentos contam como economia.</p>
-    </section>`;
-
-  graficoBarras($('#gb', el), rows, ano);
-  graficoLinha($('#gl', el), rows.map(r => ({
-    rot: MES3[r.mes - 1], v: num(r.economia_acumulada), proj: r.situacao !== 'realizado',
-    texto: `${cap(MESES[r.mes - 1])}: economia acumulada de ${brl0(r.economia_acumulada)} no ano${r.situacao === 'realizado' ? '' : ' (previsto)'}`
-  })), { id: 'a', hoje: false, alvo: meta > 0 ? rows.map((_, i) => meta * (i + 1)) : null, aria: `Economia acumulada em ${ano}, com o ritmo da meta` });
-  const ir = a => { state.plano.a = a; route(); };
-  $('#sel-ano', el).onchange = e => ir(parseInt(e.target.value, 10));
-  $('#ant', el).onclick = () => ir(ano - 1);
-  $('#prox', el).onclick = () => ir(ano + 1);
-}
-
-/* ---------- metas: economia mensal e objetivos ---------- */
-async function vMetas(el) {
-  const ano = agora.getFullYear(), mes = agora.getMonth() + 1;
-  const [metas, plano] = await Promise.all([
-    db(sb.from('metas').select('*').order('prazo')),
-    db(sb.rpc('planejamento_anual', { p_ano: ano }))
-  ]);
-  const meta = num(plano[0].meta_economia);
-  const econ = num(plano.find(r => r.mes === mes).economia_mes);
-  const st = statusMeta(econ, meta);
-  const h = hoje(), d0 = hojeDate();
-
-  el.innerHTML = `
-    <h1 class="titulo">Metas</h1>
-    <section class="sec" style="border-top:0;margin-top:8px">
-      <h2>Economia por mês</h2>
-      ${st ? `<p style="margin:0 0 4px"><strong class="${st.ok ? 'pos' : 'neg'}">${st.ok ? 'Dentro da meta' : 'Fora da meta'}</strong> em ${MESES[mes - 1]}: previsão de ${brl0(econ)} para uma meta de ${brl0(meta)}.</p>`
-        : '<p class="muted" style="margin-top:-4px">Defina quanto quer guardar por mês. O app compara com sua renda e seus gastos e mostra se você está dentro ou fora.</p>'}
-      ${htmlFormMeta(meta)}
-    </section>
-
-    <section class="sec">
-      <h2>Objetivos</h2>
-      <p class="muted" style="margin-top:-4px">Viagem, reserva, entrada do carro. Defina o valor e o prazo e o app calcula quanto guardar por mês.</p>
-      ${metas.length ? `<ul class="lista">${metas.map(m => {
-        const falta = Math.max(0, num(m.valor_alvo) - num(m.valor_atual));
-        const pct = Math.min(100, num(m.valor_atual) / num(m.valor_alvo) * 100);
-        const p = parseISO(m.prazo);
-        const meses = Math.max(1, (p.getFullYear() - d0.getFullYear()) * 12 + (p.getMonth() - d0.getMonth()));
-        const atrasada = m.prazo < h && falta > 0;
-        return `<li>
-          <div class="cat-topo"><strong>${esc(m.nome)}</strong><span>${brl0(m.valor_atual)} de ${brl0(m.valor_alvo)}</span></div>
-          <div class="barra"><i style="width:${pct}%"></i></div>
-          <p class="muted" style="margin:6px 0 0">${falta === 0 ? 'Objetivo batido.' : atrasada ? `Prazo de ${fmtDataLonga(m.prazo)} vencido. Faltam ${brl0(falta)}.` : `Até ${fmtDataLonga(m.prazo)}: guarde ${brl0(falta / meses)} por mês (${meses} ${meses === 1 ? 'mês' : 'meses'}).`}</p>
-          <div class="acoes">
-            <button class="btn sec2 mini" data-a="add" data-id="${m.id}" data-v="${m.valor_atual}">Adicionar valor</button>
-            <button class="btn perigo mini" data-a="del" data-id="${m.id}">Excluir</button>
-          </div></li>`;
-      }).join('')}</ul>` : '<p class="vazio">Nenhum objetivo ainda.</p>'}
-
-      <details class="novo" ${metas.length ? '' : 'open'}>
-        <summary>Criar objetivo</summary>
-        <form id="fm" class="form">
-          <label>Nome <input id="mnome" required placeholder="Ex.: viagem, reserva de emergência"></label>
-          <div class="dupla">
-            <label>Valor alvo <input id="malvo" inputmode="decimal" required placeholder="0,00"></label>
-            <label>Já guardado <input id="matual" inputmode="decimal" placeholder="0,00"></label>
-          </div>
-          <label>Prazo <input id="mprazo" type="date" min="${h}" required></label>
-          <button class="btn">Criar objetivo</button>
-        </form>
-      </details>
-    </section>`;
-
-  ligarFormMeta(el);
-  $('#fm', el).onsubmit = async e => {
-    e.preventDefault();
-    const alvo = parseValor($('#malvo', el).value);
-    const atual = $('#matual', el).value ? parseValor($('#matual', el).value) : 0;
-    if (!(alvo > 0) || Number.isNaN(atual) || atual < 0) return toast('Confira os valores digitados.', true);
-    await db(sb.from('metas').insert({ nome: $('#mnome', el).value.trim(), valor_alvo: alvo, valor_atual: atual, prazo: $('#mprazo', el).value }));
-    toast('Objetivo criado.');
-    route();
-  };
-  $$('[data-a]', el).forEach(b => b.onclick = async () => {
-    if (b.dataset.a === 'add') {
-      const v = parseValor(prompt('Quanto você guardou agora?') || '');
-      if (!(v > 0)) return;
-      await db(sb.from('metas').update({ valor_atual: num(b.dataset.v) + v }).eq('id', b.dataset.id));
-      toast('Valor adicionado.');
-    } else {
-      if (!confirm('Excluir este objetivo?')) return;
-      await db(sb.from('metas').delete().eq('id', b.dataset.id));
+    function showApp(user) {
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('app-screen').classList.remove('hidden');
+      document.getElementById('user-email-display').textContent = user.email;
+      loadData();
     }
-    route();
-  });
-}
 
-/* ---------- ajustes ---------- */
-async function vAjustes(el) {
-  await garantirCats();
-  const despesas = state.cats.filter(c => c.tipo === 'despesa' && c.grupo !== 'investimento');
+    // Login
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const errorEl = document.getElementById('login-error');
+      const btn = document.getElementById('login-btn');
 
-  el.innerHTML = `
-    <h1 class="titulo">Ajustes</h1>
-    <section class="sec" style="border-top:0;margin-top:8px">
-      <h2>Limite mensal por categoria</h2>
-      <p class="muted" style="margin-top:-4px">Quanto você quer gastar por mês. Deixe 0 para não ter limite.</p>
-      <ul class="lista">${despesas.map(c => `
-        <li class="linha" style="grid-template-columns:1fr 130px">
-          <label for="o-${c.id}"><strong>${esc(c.nome)}</strong><span class="meta">${GRUPOS[c.grupo]}</span></label>
-          <input id="o-${c.id}" class="lim" data-id="${c.id}" inputmode="decimal" value="${num(c.orcamento_mensal) ? valorInput(c.orcamento_mensal) : '0'}" style="min-height:44px;padding:0 10px;border:1px solid #BCC5BB;border-radius:8px;text-align:right;width:100%">
-        </li>`).join('')}</ul>
-      <details class="novo"><summary>Nova categoria</summary>
-        <form id="fc" class="form">
-          <fieldset class="seg"><legend class="sr">Tipo</legend>
-            <input type="radio" name="ctipo" id="c-d" value="despesa" checked><label for="c-d">Gasto</label>
-            <input type="radio" name="ctipo" id="c-r" value="receita"><label for="c-r">Ganho</label>
-          </fieldset>
-          <label>Nome <input id="cnome" required></label>
-          <label id="lb-grupo">Grupo <select id="cgrupo">${Object.entries(GRUPOS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select></label>
-          <button class="btn">Criar categoria</button>
-        </form>
-      </details>
-    </section>
+      errorEl.classList.add('hidden');
+      btn.textContent = 'Autenticando...';
+      btn.disabled = true;
 
-    <section class="sec">
-      <h2>Conta</h2>
-      <p class="muted">${esc(state.user.email)}</p>
-      <button class="btn sec2" id="sair">Sair</button>
-    </section>`;
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
-  $$('.lim', el).forEach(i => i.onchange = async () => {
-    const v = parseValor(i.value || '0');
-    if (Number.isNaN(v) || v < 0) return toast('Informe um valor válido.', true);
-    await db(sb.from('categorias').update({ orcamento_mensal: v }).eq('id', i.dataset.id));
-    state.cats = null;
-    toast('Limite salvo.');
-  });
-  $$('input[name=ctipo]', el).forEach(r => r.addEventListener('change', () => {
-    $('#lb-grupo', el).hidden = $('input[name=ctipo]:checked', el).value === 'receita';
-  }));
-  $('#fc', el).onsubmit = async e => {
-    e.preventDefault();
-    const tipo = $('input[name=ctipo]:checked', el).value;
-    await db(sb.from('categorias').insert({ tipo, nome: $('#cnome', el).value.trim(), grupo: tipo === 'despesa' ? $('#cgrupo', el).value : null }));
-    state.cats = null;
-    toast('Categoria criada.');
-    route();
-  };
-  $('#sair', el).onclick = () => sb.auth.signOut();
-}
+      btn.textContent = 'Entrar no Ciclo';
+      btn.disabled = false;
 
-/* ---------- rotas ---------- */
-const TELAS = { inicio: vInicio, lancamentos: vLancamentos, indicadores: vIndicadores, planejamento: vPlanejamento, metas: vMetas, ajustes: vAjustes };
-let rotaSeq = 0;
+      if (error) {
+        errorEl.textContent = 'Credenciais inválidas ou acesso não autorizado.';
+        errorEl.classList.remove('hidden');
+      } else {
+        showApp(data.user);
+      }
+    });
 
-async function route() {
-  const seq = ++rotaSeq;
-  try {
-    if (!state.user) return telaLogin();
-    if (!state.perfil) await carregarPerfil();
-    if (seq !== rotaSeq) return;
-    let rota = (location.hash || '#inicio').slice(1);
-    if (!TELAS[rota]) rota = 'inicio';
-    const el = shell(rota);
-    await TELAS[rota](el);
-    if (seq === rotaSeq) window.scrollTo(0, 0);
-  } catch (err) {
-    console.error(err);
-    if (seq === rotaSeq && state.user) {
-      const v = $('#view') || $app;
-      v.innerHTML = `<div class="vazio"><p>Não foi possível carregar esta tela. ${esc(err.message || '')}</p><button class="btn" onclick="route()">Tentar de novo</button></div>`;
+    async function logout() {
+      await supabaseClient.auth.signOut();
+      location.reload();
     }
-  }
-}
 
-(async function iniciar() {
-  if (CONFIG.SUPABASE_URL.startsWith('COLE')) {
-    $app.innerHTML = '<div class="wrap estreito"><h1 class="titulo">Falta configurar</h1><p class="sub">Abra o arquivo index.html e preencha SUPABASE_URL e SUPABASE_ANON_KEY no começo do script.</p></div>';
-    return;
-  }
-  const { data: { session } } = await sb.auth.getSession();
-  state.user = session?.user ?? null;
-  sb.auth.onAuthStateChange((_evento, sess) => {
-    const novo = sess?.user ?? null;
-    if ((novo?.id ?? null) !== (state.user?.id ?? null)) {
-      state.user = novo; state.perfil = null; state.cats = null; state.anoMin = null;
-      setTimeout(route, 0); // evita chamar o Supabase dentro do callback
+    // Carregar dados do Supabase (O RLS filtra automaticamente pelo usuário logado)
+    async function loadData() {
+      const year = parseInt(document.getElementById('filter-year').value);
+      const month = document.getElementById('filter-month').value;
+
+      let startDate = `${year}-01-01`;
+      let endDate = `${year}-12-31`;
+
+      if (month !== 'all') {
+        const m = month.padStart(2, '0');
+        const lastDay = new Date(year, parseInt(month), 0).getDate();
+        startDate = `${year}-${m}-01`;
+        endDate = `${year}-${m}-${lastDay}`;
+      }
+
+      // Buscar transações
+      const { data: transactions, error: tError } = await supabaseClient
+        .from('transactions')
+        .select('*')
+        .gte('date', startDate)
+        .lte('date', endDate)
+        .order('date', { ascending: false });
+
+      if (!tError) allTransactions = transactions || [];
+
+      // Buscar metas
+      let goalQuery = supabaseClient.from('savings_goals').select('*').eq('year', year);
+      if (month !== 'all') goalQuery = goalQuery.eq('month', parseInt(month));
+      const { data: goals, error: gError } = await goalQuery;
+
+      if (!gError) currentGoals = goals || [];
+
+      applyLocalFilters();
     }
-  });
-  window.addEventListener('hashchange', route);
-  route();
-})();
-</script>
+
+    // Aplicar filtros locais (Tipo, Categoria, Busca) e atualizar tela
+    function applyLocalFilters() {
+      const typeFilter = document.getElementById('filter-type').value;
+      const catFilter = document.getElementById('filter-category').value;
+      const searchFilter = document.getElementById('filter-search').value.toLowerCase();
+
+      const filtered = allTransactions.filter(t => {
+        const matchType = typeFilter === 'all' || t.type === typeFilter;
+        const matchCat = catFilter === 'all' || t.category === catFilter;
+        const matchSearch = t.description.toLowerCase().includes(searchFilter);
+        return matchType && matchCat && matchSearch;
+      });
+
+      updateKPIs(filtered);
+      renderTable(filtered);
+      renderChart(filtered);
+    }
+
+    // Atualizar Indicadores
+    function updateKPIs(data) {
+      const income = data.filter(t => t.type === 'income').reduce((acc, t) => acc + Number(t.amount), 0);
+      const expense = data.filter(t => t.type === 'expense').reduce((acc, t) => acc + Number(t.amount), 0);
+      const balance = income - expense;
+      const savingsRate = income > 0 ? ((balance / income) * 100).toFixed(1) : 0;
+
+      const totalGoal = currentGoals.reduce((acc, g) => acc + Number(g.target_amount), 0);
+      const goalProgress = totalGoal > 0 ? Math.min(Math.max((balance / totalGoal) * 100, 0), 100).toFixed(0) : 0;
+
+      document.getElementById('kpi-income').textContent = formatCurrency(income);
+      document.getElementById('kpi-expense').textContent = formatCurrency(expense);
+      
+      const balanceEl = document.getElementById('kpi-balance');
+      balanceEl.textContent = formatCurrency(balance);
+      balanceEl.className = `text-2xl font-bold ${balance >= 0 ? 'text-slate-900' : 'text-rose-600'}`;
+      
+      document.getElementById('kpi-savings-rate').textContent = `Taxa de economia: ${savingsRate}%`;
+      document.getElementById('kpi-goal').textContent = formatCurrency(totalGoal);
+      document.getElementById('kpi-goal-bar').style.width = `${goalProgress}%`;
+      document.getElementById('kpi-goal-status').textContent = totalGoal > 0 
+        ? `${goalProgress}% da meta atingida` 
+        : 'Nenhuma meta definida para este período';
+    }
+
+    // Renderizar Tabela
+    function renderTable(data) {
+      const tbody = document.getElementById('transactions-list');
+      document.getElementById('records-count').textContent = `${data.length} registro(s)`;
+
+      if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-slate-400">Nenhum lançamento encontrado.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.map(t => {
+        const isIncome = t.type === 'income';
+        const formattedDate = t.date.split('-').reverse().join('/');
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="px-6 py-3.5 text-slate-500 whitespace-nowrap">${formattedDate}</td>
+            <td class="px-6 py-3.5 font-medium text-slate-800">${t.description}</td>
+            <td class="px-6 py-3.5">
+              <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                ${t.category}
+              </span>
+            </td>
+            <td class="px-6 py-3.5 text-right font-semibold whitespace-nowrap ${isIncome ? 'text-emerald-600' : 'text-rose-600'}">
+              ${isIncome ? '+' : '-'} ${formatCurrency(t.amount)}
+            </td>
+            <td class="px-6 py-3.5 text-center">
+              <button onclick="deleteTransaction('${t.id}')" class="text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Excluir">
+                <i data-lucide="trash-2" class="w-4 h-4 inline"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    // Renderizar Gráfico de Despesas
+    function renderChart(data) {
+      const expenses = data.filter(t => t.type === 'expense');
+      const grouped = {};
+      expenses.forEach(t => {
+        grouped[t.category] = (grouped[t.category] || 0) + Number(t.amount);
+      });
+
+      const ctx = document.getElementById('category-chart').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(grouped),
+          datasets: [{
+            data: Object.values(grouped),
+            backgroundColor: ['#10b981', '#6366f1', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#64748b'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+          }
+        }
+      });
+    }
+
+    // Salvar Transação
+    document.getElementById('transaction-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        description: document.getElementById('t-desc').value,
+        amount: parseFloat(document.getElementById('t-amount').value),
+        type: document.getElementById('t-type').value,
+        category: document.getElementById('t-category').value,
+        date: document.getElementById('t-date').value
+      };
+
+      const { error } = await supabaseClient.from('transactions').insert([payload]);
+      if (!error) {
+        document.getElementById('t-desc').value = '';
+        document.getElementById('t-amount').value = '';
+        loadData();
+      } else {
+        alert('Erro ao salvar lançamento: ' + error.message);
+      }
+    });
+
+    // Excluir Transação
+    async function deleteTransaction(id) {
+      if (!confirm('Deseja realmente excluir este lançamento?')) return;
+      const { error } = await supabaseClient.from('transactions').delete().eq('id', id);
+      if (!error) loadData();
+    }
+
+    // Salvar ou Atualizar Meta Mensal (Upsert)
+    document.getElementById('goal-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      const payload = {
+        user_id: user.id,
+        month: parseInt(document.getElementById('g-month').value),
+        year: parseInt(document.getElementById('g-year').value),
+        target_amount: parseFloat(document.getElementById('g-amount').value)
+      };
+
+      const { error } = await supabaseClient
+        .from('savings_goals')
+        .upsert(payload, { onConflict: 'user_id,month,year' });
+
+      if (!error) {
+        document.getElementById('g-amount').value = '';
+        loadData();
+      } else {
+        alert('Erro ao salvar meta: ' + error.message);
+      }
+    });
+
+    function formatCurrency(value) {
+      return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    checkAuth();
+  </script>
 </body>
 </html>
