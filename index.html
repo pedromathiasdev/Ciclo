@@ -56,12 +56,27 @@
     <!-- Navbar -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white">
-            <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+        <div class="flex items-center gap-6">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white">
+              <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+            </div>
+            <span class="text-xl font-bold text-slate-900">Ciclo</span>
           </div>
-          <span class="text-xl font-bold text-slate-900">Ciclo</span>
+
+          <!-- Navegação entre Abas -->
+          <nav class="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
+            <button id="tab-overview" onclick="switchTab('overview')"
+              class="px-3 py-1.5 rounded-md text-sm font-medium bg-white text-slate-900 shadow-sm transition cursor-pointer">
+              Visão Geral & Lançamentos
+            </button>
+            <button id="tab-insights" onclick="switchTab('insights')"
+              class="px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900 transition cursor-pointer">
+              Indicadores e Recomendações
+            </button>
+          </nav>
         </div>
+
         <div class="flex items-center gap-4">
           <span id="user-email-display" class="text-sm text-slate-500 hidden sm:inline"></span>
           <button onclick="logout()" class="flex items-center gap-1.5 text-sm text-slate-600 hover:text-rose-600 font-medium cursor-pointer">
@@ -73,7 +88,7 @@
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
-      <!-- 4. FILTROS DE GESTÃO -->
+      <!-- FILTROS GLOBAIS -->
       <section class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-end gap-4">
         <div>
           <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Mês</label>
@@ -100,6 +115,7 @@
             <option value="2025">2025</option>
             <option value="2026" selected>2026</option>
             <option value="2027">2027</option>
+            <option value="2028">2028</option>
           </select>
         </div>
 
@@ -124,184 +140,216 @@
             <option value="Transporte">Transporte</option>
             <option value="Lazer">Lazer</option>
             <option value="Saúde">Saúde</option>
+            <option value="Assinaturas">Assinaturas</option>
             <option value="Outros">Outros</option>
           </select>
         </div>
 
         <div class="flex-1 min-w-[200px]">
           <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Buscar descrição</label>
-          <input type="text" id="filter-search" oninput="applyLocalFilters()" placeholder="Ex: Supermercado, Aluguel..."
+          <input type="text" id="filter-search" oninput="applyLocalFilters()" placeholder="Ex: Aluguel, Mercado..."
             class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
         </div>
       </section>
 
-      <!-- 1. INDICADORES DE CONTROLE FINANCEIRO -->
-      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <div class="flex items-center justify-between text-slate-500 mb-2">
-            <span class="text-sm font-medium">Total de Ganhos</span>
-            <i data-lucide="trending-up" class="w-5 h-5 text-emerald-600"></i>
-          </div>
-          <p id="kpi-income" class="text-2xl font-bold text-emerald-600">R$ 0,00</p>
-        </div>
+      <!-- ================================================================= -->
+      <!-- ABA 1: VISÃO GERAL E LANÇAMENTOS                                  -->
+      <!-- ================================================================= -->
+      <div id="view-overview" class="space-y-6">
 
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <div class="flex items-center justify-between text-slate-500 mb-2">
-            <span class="text-sm font-medium">Total de Despesas</span>
-            <i data-lucide="trending-down" class="w-5 h-5 text-rose-600"></i>
+        <!-- KPIs PRINCIPAIS -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between text-slate-500 mb-2">
+              <span class="text-sm font-medium">Total de Ganhos</span>
+              <i data-lucide="trending-up" class="w-5 h-5 text-emerald-600"></i>
+            </div>
+            <p id="kpi-income" class="text-2xl font-bold text-emerald-600">R$ 0,00</p>
           </div>
-          <p id="kpi-expense" class="text-2xl font-bold text-rose-600">R$ 0,00</p>
-        </div>
 
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <div class="flex items-center justify-between text-slate-500 mb-2">
-            <span class="text-sm font-medium">Saldo do Período</span>
-            <i data-lucide="wallet" class="w-5 h-5 text-slate-700"></i>
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between text-slate-500 mb-2">
+              <span class="text-sm font-medium">Total de Despesas</span>
+              <i data-lucide="trending-down" class="w-5 h-5 text-rose-600"></i>
+            </div>
+            <p id="kpi-expense" class="text-2xl font-bold text-rose-600">R$ 0,00</p>
           </div>
-          <p id="kpi-balance" class="text-2xl font-bold text-slate-900">R$ 0,00</p>
-          <p id="kpi-savings-rate" class="text-xs text-slate-500 mt-1">Taxa de economia: 0%</p>
-        </div>
 
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <div class="flex items-center justify-between text-slate-500 mb-2">
-            <span class="text-sm font-medium">Meta de Economia</span>
-            <i data-lucide="target" class="w-5 h-5 text-indigo-600"></i>
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between text-slate-500 mb-2">
+              <span class="text-sm font-medium">Saldo do Período</span>
+              <i data-lucide="wallet" class="w-5 h-5 text-slate-700"></i>
+            </div>
+            <p id="kpi-balance" class="text-2xl font-bold text-slate-900">R$ 0,00</p>
+            <p id="kpi-savings-rate" class="text-xs text-slate-500 mt-1">Taxa de economia: 0%</p>
           </div>
-          <p id="kpi-goal" class="text-2xl font-bold text-indigo-600">R$ 0,00</p>
-          <div class="w-full bg-slate-100 h-2 rounded-full mt-2 overflow-hidden">
-            <div id="kpi-goal-bar" class="bg-indigo-600 h-full transition-all duration-300" style="width: 0%"></div>
-          </div>
-          <p id="kpi-goal-status" class="text-xs text-slate-500 mt-1">0% atingido</p>
-        </div>
-      </section>
 
-      <!-- LANÇAMENTOS E METAS -->
-      <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        <!-- 2. LANÇAMENTO DE GANHOS E DESPESAS -->
-        <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-600"></i> Novo Lançamento
-          </h2>
-          <form id="transaction-form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            <div class="lg:col-span-2">
-              <input type="text" id="t-desc" required placeholder="Descrição (ex: Salário)"
-                class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between text-slate-500 mb-2">
+              <span class="text-sm font-medium">Meta de Economia</span>
+              <i data-lucide="target" class="w-5 h-5 text-indigo-600"></i>
             </div>
-            <div>
-              <input type="number" step="0.01" id="t-amount" required placeholder="Valor (R$)"
-                class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
+            <p id="kpi-goal" class="text-2xl font-bold text-indigo-600">R$ 0,00</p>
+            <div class="w-full bg-slate-100 h-2 rounded-full mt-2 overflow-hidden">
+              <div id="kpi-goal-bar" class="bg-indigo-600 h-full transition-all duration-300" style="width: 0%"></div>
             </div>
-            <div>
-              <select id="t-type" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
-                <option value="expense">Despesa (-)</option>
-                <option value="income">Ganho (+)</option>
-              </select>
-            </div>
-            <div>
-              <select id="t-category" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
-                <option value="Alimentação">Alimentação</option>
-                <option value="Moradia">Moradia</option>
-                <option value="Transporte">Transporte</option>
-                <option value="Lazer">Lazer</option>
-                <option value="Saúde">Saúde</option>
-                <option value="Salário">Salário</option>
-                <option value="Freelance">Freelance</option>
-                <option value="Investimentos">Investimentos</option>
-                <option value="Outros">Outros</option>
-              </select>
-            </div>
-            <div class="lg:col-span-2">
-              <input type="date" id="t-date" required
-                class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
-            </div>
-            <div class="lg:col-span-3">
-              <button type="submit"
-                class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition cursor-pointer">
-                Adicionar Lançamento
+            <p id="kpi-goal-status" class="text-xs text-slate-500 mt-1">0% atingido</p>
+          </div>
+        </section>
+
+        <!-- LANÇAMENTO EM LOTE / RECORRENTE + META MENSAL -->
+        <section class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+          <!-- LANÇAMENTO DE MÚLTIPLAS LINHAS E RECORRÊNCIAS -->
+          <div class="lg:col-span-3 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                <i data-lucide="layers" class="w-5 h-5 text-emerald-600"></i> Lançar Ganhos e Despesas (Múltiplas Linhas / Fixos)
+              </h2>
+              <button type="button" onclick="addBatchRow()"
+                class="flex items-center gap-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg transition cursor-pointer">
+                <i data-lucide="plus" class="w-4 h-4"></i> Adicionar Linha
               </button>
             </div>
-          </form>
-        </div>
 
-        <!-- 3. LANÇAMENTO DE METAS DE ECONOMIA -->
-        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <i data-lucide="flag" class="w-5 h-5 text-indigo-600"></i> Definir Meta Mensal
-          </h2>
-          <form id="goal-form" class="space-y-3">
-            <div class="grid grid-cols-2 gap-2">
-              <select id="g-month" required class="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
-                <option value="1">Janeiro</option>
-                <option value="2">Fevereiro</option>
-                <option value="3">Março</option>
-                <option value="4">Abril</option>
-                <option value="5">Maio</option>
-                <option value="6">Junho</option>
-                <option value="7">Julho</option>
-                <option value="8">Agosto</option>
-                <option value="9">Setembro</option>
-                <option value="10">Outubro</option>
-                <option value="11">Novembro</option>
-                <option value="12">Dezembro</option>
-              </select>
-              <select id="g-year" required class="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
-                <option value="2025">2025</option>
-                <option value="2026" selected>2026</option>
-                <option value="2027">2027</option>
-              </select>
+            <form id="batch-form" class="space-y-3">
+              <div id="batch-rows" class="space-y-2.5">
+                <!-- Linhas geradas dinamicamente -->
+              </div>
+
+              <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                <p class="text-xs text-slate-500">
+                  Dica: marque <strong>Fixo?</strong> e informe a <strong>Qtd. Meses</strong> para repetir automaticamente mês a mês.
+                </p>
+                <button type="submit" id="save-batch-btn"
+                  class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-5 rounded-lg text-sm transition cursor-pointer">
+                  Salvar Todos os Lançamentos
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- META MENSAL -->
+          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <i data-lucide="flag" class="w-5 h-5 text-indigo-600"></i> Definir Meta Mensal
+            </h2>
+            <form id="goal-form" class="space-y-3">
+              <div class="grid grid-cols-2 gap-2">
+                <select id="g-month" required class="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
+                  <option value="1">Janeiro</option>
+                  <option value="2">Fevereiro</option>
+                  <option value="3">Março</option>
+                  <option value="4">Abril</option>
+                  <option value="5">Maio</option>
+                  <option value="6">Junho</option>
+                  <option value="7">Julho</option>
+                  <option value="8">Agosto</option>
+                  <option value="9">Setembro</option>
+                  <option value="10">Outubro</option>
+                  <option value="11">Novembro</option>
+                  <option value="12">Dezembro</option>
+                </select>
+                <select id="g-year" required class="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
+                  <option value="2025">2025</option>
+                  <option value="2026" selected>2026</option>
+                  <option value="2027">2027</option>
+                  <option value="2028">2028</option>
+                </select>
+              </div>
+              <input type="number" step="0.01" id="g-amount" required placeholder="Valor da meta (R$)"
+                class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
+              <button type="submit"
+                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition cursor-pointer">
+                Salvar Meta
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <!-- GRÁFICO E TABELA -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <h3 class="text-base font-bold text-slate-900 mb-4">Despesas por Categoria</h3>
+            <div class="relative h-64 w-full flex items-center justify-center">
+              <canvas id="category-chart"></canvas>
             </div>
-            <input type="number" step="0.01" id="g-amount" required placeholder="Valor da meta (R$)"
-              class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
-            <button type="submit"
-              class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition cursor-pointer">
-              Salvar Meta
-            </button>
-          </form>
-        </div>
-      </section>
+          </div>
 
-      <!-- GRÁFICO E TABELA DE EXTRATO -->
-      <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Gráfico por Categoria -->
-        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-          <h3 class="text-base font-bold text-slate-900 mb-4">Despesas por Categoria</h3>
-          <div class="relative h-64 w-full flex items-center justify-center">
-            <canvas id="category-chart"></canvas>
+          <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+              <h3 class="text-base font-bold text-slate-900">Extrato de Movimentações</h3>
+              <span id="records-count" class="text-xs text-slate-500">0 registros</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
+                  <tr>
+                    <th class="px-6 py-3">Data</th>
+                    <th class="px-6 py-3">Descrição</th>
+                    <th class="px-6 py-3">Categoria</th>
+                    <th class="px-6 py-3 text-right">Valor</th>
+                    <th class="px-6 py-3 text-center">Ação</th>
+                  </tr>
+                </thead>
+                <tbody id="transactions-list" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        </section>
+      </div>
 
-        <!-- Lista de Transações -->
-        <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-            <h3 class="text-base font-bold text-slate-900">Extrato de Movimentações</h3>
-            <span id="records-count" class="text-xs text-slate-500">0 registros</span>
+      <!-- ================================================================= -->
+      <!-- ABA 2: INDICADORES E RECOMENDAÇÕES                                -->
+      <!-- ================================================================= -->
+      <div id="view-insights" class="hidden space-y-6">
+
+        <!-- INDICADORES ANALÍTICOS -->
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold uppercase text-slate-400">Taxa de Poupança</span>
+            <p id="ind-savings-rate" class="text-2xl font-bold text-emerald-600 mt-1">0%</p>
+            <p class="text-xs text-slate-500 mt-1">Ideal: acima de 20% da renda</p>
           </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-              <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
-                <tr>
-                  <th class="px-6 py-3">Data</th>
-                  <th class="px-6 py-3">Descrição</th>
-                  <th class="px-6 py-3">Categoria</th>
-                  <th class="px-6 py-3 text-right">Valor</th>
-                  <th class="px-6 py-3 text-center">Ação</th>
-                </tr>
-              </thead>
-              <tbody id="transactions-list" class="divide-y divide-slate-100">
-                <!-- Preenchido via JS -->
-              </tbody>
-            </table>
+
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold uppercase text-slate-400">Comprometimento da Renda</span>
+            <p id="ind-expense-ratio" class="text-2xl font-bold text-slate-900 mt-1">0%</p>
+            <p class="text-xs text-slate-500 mt-1">Despesas ÷ Ganhos no período</p>
           </div>
-        </div>
-      </section>
+
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold uppercase text-slate-400">Despesas Fixas / Recorrentes</span>
+            <p id="ind-fixed-ratio" class="text-2xl font-bold text-amber-600 mt-1">0%</p>
+            <p class="text-xs text-slate-500 mt-1">Proporção de gastos recorrentes</p>
+          </div>
+
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold uppercase text-slate-400">Maior Categoria de Gasto</span>
+            <p id="ind-top-category" class="text-xl font-bold text-indigo-600 mt-1">—</p>
+            <p id="ind-top-category-val" class="text-xs text-slate-500 mt-1">R$ 0,00</p>
+          </div>
+        </section>
+
+        <!-- RECOMENDAÇÕES INTELIGENTES -->
+        <section class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <div class="flex items-center gap-2 mb-4">
+            <i data-lucide="sparkles" class="w-5 h-5 text-emerald-600"></i>
+            <h2 class="text-lg font-bold text-slate-900">Recomendações para o Período Selecionado</h2>
+          </div>
+          <div id="recommendations-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Preenchido dinamicamente -->
+          </div>
+        </section>
+
+      </div>
 
     </main>
   </div>
 
   <script>
     // =========================================================================
-    // CONFIGURAÇÃO DO SUPABASE (Substitua pelos dados do seu projeto)
+    // CONFIGURAÇÃO DO SUPABASE
     // =========================================================================
     const SUPABASE_URL = 'https://vwxeulgzvdkigrrvmutq.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_UXwWHP8ZaHvG4Ug5cvpRug_Olw7y9CM';
@@ -311,16 +359,103 @@
     let currentGoals = [];
     let chartInstance = null;
 
+    const CATEGORIES = [
+      'Alimentação', 'Moradia', 'Transporte', 'Lazer', 'Saúde',
+      'Assinaturas', 'Salário', 'Freelance', 'Investimentos', 'Outros'
+    ];
+
     // Inicialização
     lucide.createIcons();
     const today = new Date();
-    document.getElementById('t-date').valueAsDate = today;
+    const todayStr = today.toISOString().split('T')[0];
+
     document.getElementById('filter-month').value = String(today.getMonth() + 1);
     document.getElementById('filter-year').value = String(today.getFullYear());
     document.getElementById('g-month').value = String(today.getMonth() + 1);
     document.getElementById('g-year').value = String(today.getFullYear());
 
-    // Verifica sessão ativa
+    // Alternar Abas
+    function switchTab(tab) {
+      const isOverview = tab === 'overview';
+      document.getElementById('view-overview').classList.toggle('hidden', !isOverview);
+      document.getElementById('view-insights').classList.toggle('hidden', isOverview);
+
+      document.getElementById('tab-overview').className = isOverview
+        ? 'px-3 py-1.5 rounded-md text-sm font-medium bg-white text-slate-900 shadow-sm transition cursor-pointer'
+        : 'px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900 transition cursor-pointer';
+
+      document.getElementById('tab-insights').className = !isOverview
+        ? 'px-3 py-1.5 rounded-md text-sm font-medium bg-white text-slate-900 shadow-sm transition cursor-pointer'
+        : 'px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900 transition cursor-pointer';
+
+      if (!isOverview) applyLocalFilters();
+    }
+
+    // Adicionar linha no lançamento em lote
+    function addBatchRow(defaults = {}) {
+      const container = document.getElementById('batch-rows');
+      const rowId = 'row-' + Math.random().toString(36).substr(2, 7);
+      const categoryOptions = CATEGORIES.map(c =>
+        `<option value="${c}" ${defaults.category === c ? 'selected' : ''}>${c}</option>`
+      ).join('');
+
+      const div = document.createElement('div');
+      div.id = rowId;
+      div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center bg-slate-50 p-2.5 rounded-lg border border-slate-200';
+      div.innerHTML = `
+        <input type="text" placeholder="Descrição (ex: Aluguel)" required value="${defaults.description || ''}"
+          class="row-desc sm:col-span-3 px-2.5 py-1.5 rounded border border-slate-300 text-sm bg-white" />
+        <input type="number" step="0.01" placeholder="Valor R$" required value="${defaults.amount || ''}"
+          class="row-amount sm:col-span-2 px-2.5 py-1.5 rounded border border-slate-300 text-sm bg-white" />
+        <select class="row-type sm:col-span-2 px-2 py-1.5 rounded border border-slate-300 text-sm bg-white">
+          <option value="expense" ${defaults.type !== 'income' ? 'selected' : ''}>Despesa (-)</option>
+          <option value="income" ${defaults.type === 'income' ? 'selected' : ''}>Ganho (+)</option>
+        </select>
+        <select class="row-category sm:col-span-2 px-2 py-1.5 rounded border border-slate-300 text-sm bg-white">
+          ${categoryOptions}
+        </select>
+        <input type="date" value="${defaults.date || todayStr}" required
+          class="row-date sm:col-span-2 px-2 py-1.5 rounded border border-slate-300 text-sm bg-white" />
+        <div class="sm:col-span-1 flex items-center justify-end gap-1">
+          <button type="button" onclick="removeBatchRow('${rowId}')" title="Remover linha"
+            class="p-1.5 text-slate-400 hover:text-rose-600 cursor-pointer">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <div class="sm:col-span-12 flex flex-wrap items-center gap-4 pt-1 pl-1 text-xs text-slate-600">
+          <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
+            <input type="checkbox" onchange="toggleMonthsInput('${rowId}', this.checked)"
+              class="row-fixed rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+            <span>Repetir mensalmente (Fixo)</span>
+          </label>
+          <div id="months-box-${rowId}" class="hidden items-center gap-1.5">
+            <span>Por quantos meses?</span>
+            <input type="number" min="2" max="120" value="12"
+              class="row-months w-16 px-2 py-0.5 rounded border border-slate-300 bg-white text-xs" />
+          </div>
+        </div>
+      `;
+      container.appendChild(div);
+      lucide.createIcons();
+    }
+
+    function removeBatchRow(id) {
+      const container = document.getElementById('batch-rows');
+      if (container.children.length > 1) {
+        document.getElementById(id).remove();
+      }
+    }
+
+    function toggleMonthsInput(rowId, checked) {
+      const box = document.getElementById('months-box-' + rowId);
+      box.classList.toggle('hidden', !checked);
+      box.classList.toggle('flex', checked);
+    }
+
+    // Cria 1 linha inicial por padrão
+    addBatchRow();
+
+    // Autenticação
     async function checkAuth() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (session) {
@@ -338,7 +473,6 @@
       loadData();
     }
 
-    // Login
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value;
@@ -368,7 +502,7 @@
       location.reload();
     }
 
-    // Carregar dados do Supabase (O RLS filtra automaticamente pelo usuário logado)
+    // Carregar dados do Supabase
     async function loadData() {
       const year = parseInt(document.getElementById('filter-year').value);
       const month = document.getElementById('filter-month').value;
@@ -383,7 +517,6 @@
         endDate = `${year}-${m}-${lastDay}`;
       }
 
-      // Buscar transações
       const { data: transactions, error: tError } = await supabaseClient
         .from('transactions')
         .select('*')
@@ -393,7 +526,6 @@
 
       if (!tError) allTransactions = transactions || [];
 
-      // Buscar metas
       let goalQuery = supabaseClient.from('savings_goals').select('*').eq('year', year);
       if (month !== 'all') goalQuery = goalQuery.eq('month', parseInt(month));
       const { data: goals, error: gError } = await goalQuery;
@@ -403,7 +535,6 @@
       applyLocalFilters();
     }
 
-    // Aplicar filtros locais (Tipo, Categoria, Busca) e atualizar tela
     function applyLocalFilters() {
       const typeFilter = document.getElementById('filter-type').value;
       const catFilter = document.getElementById('filter-category').value;
@@ -419,9 +550,9 @@
       updateKPIs(filtered);
       renderTable(filtered);
       renderChart(filtered);
+      renderInsightsAndRecommendations(filtered);
     }
 
-    // Atualizar Indicadores
     function updateKPIs(data) {
       const income = data.filter(t => t.type === 'income').reduce((acc, t) => acc + Number(t.amount), 0);
       const expense = data.filter(t => t.type === 'expense').reduce((acc, t) => acc + Number(t.amount), 0);
@@ -433,20 +564,19 @@
 
       document.getElementById('kpi-income').textContent = formatCurrency(income);
       document.getElementById('kpi-expense').textContent = formatCurrency(expense);
-      
+
       const balanceEl = document.getElementById('kpi-balance');
       balanceEl.textContent = formatCurrency(balance);
       balanceEl.className = `text-2xl font-bold ${balance >= 0 ? 'text-slate-900' : 'text-rose-600'}`;
-      
+
       document.getElementById('kpi-savings-rate').textContent = `Taxa de economia: ${savingsRate}%`;
       document.getElementById('kpi-goal').textContent = formatCurrency(totalGoal);
       document.getElementById('kpi-goal-bar').style.width = `${goalProgress}%`;
-      document.getElementById('kpi-goal-status').textContent = totalGoal > 0 
-        ? `${goalProgress}% da meta atingida` 
+      document.getElementById('kpi-goal-status').textContent = totalGoal > 0
+        ? `${goalProgress}% da meta atingida`
         : 'Nenhuma meta definida para este período';
     }
 
-    // Renderizar Tabela
     function renderTable(data) {
       const tbody = document.getElementById('transactions-list');
       document.getElementById('records-count').textContent = `${data.length} registro(s)`;
@@ -459,10 +589,14 @@
       tbody.innerHTML = data.map(t => {
         const isIncome = t.type === 'income';
         const formattedDate = t.date.split('-').reverse().join('/');
+        const isFixedBadge = t.recurrence_group
+          ? `<span class="ml-1.5 px-1.5 py-0.5 text-[10px] font-semibold bg-indigo-50 text-indigo-600 rounded">Fixo</span>`
+          : '';
+
         return `
           <tr class="hover:bg-slate-50 transition">
             <td class="px-6 py-3.5 text-slate-500 whitespace-nowrap">${formattedDate}</td>
-            <td class="px-6 py-3.5 font-medium text-slate-800">${t.description}</td>
+            <td class="px-6 py-3.5 font-medium text-slate-800">${t.description}${isFixedBadge}</td>
             <td class="px-6 py-3.5">
               <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
                 ${t.category}
@@ -482,7 +616,6 @@
       lucide.createIcons();
     }
 
-    // Renderizar Gráfico de Despesas
     function renderChart(data) {
       const expenses = data.filter(t => t.type === 'expense');
       const grouped = {};
@@ -499,7 +632,7 @@
           labels: Object.keys(grouped),
           datasets: [{
             data: Object.values(grouped),
-            backgroundColor: ['#10b981', '#6366f1', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#64748b'],
+            backgroundColor: ['#10b981', '#6366f1', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#64748b', '#14b8a6', '#f97316'],
             borderWidth: 0
           }]
         },
@@ -513,35 +646,180 @@
       });
     }
 
-    // Salvar Transação
-    document.getElementById('transaction-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const payload = {
-        description: document.getElementById('t-desc').value,
-        amount: parseFloat(document.getElementById('t-amount').value),
-        type: document.getElementById('t-type').value,
-        category: document.getElementById('t-category').value,
-        date: document.getElementById('t-date').value
+    // Indicadores avançados e recomendações (Aba 2)
+    function renderInsightsAndRecommendations(data) {
+      const income = data.filter(t => t.type === 'income').reduce((acc, t) => acc + Number(t.amount), 0);
+      const expensesList = data.filter(t => t.type === 'expense');
+      const expense = expensesList.reduce((acc, t) => acc + Number(t.amount), 0);
+      const balance = income - expense;
+
+      const fixedExpenses = expensesList
+        .filter(t => Boolean(t.recurrence_group))
+        .reduce((acc, t) => acc + Number(t.amount), 0);
+
+      const savingsRate = income > 0 ? ((balance / income) * 100) : 0;
+      const expenseRatio = income > 0 ? ((expense / income) * 100) : 0;
+      const fixedRatio = expense > 0 ? ((fixedExpenses / expense) * 100) : 0;
+
+      // Maior categoria de gasto
+      const byCategory = {};
+      expensesList.forEach(t => {
+        byCategory[t.category] = (byCategory[t.category] || 0) + Number(t.amount);
+      });
+      const sortedCategories = Object.entries(byCategory).sort((a, b) => b[1] - a[1]);
+      const topCat = sortedCategories[0];
+
+      document.getElementById('ind-savings-rate').textContent = `${savingsRate.toFixed(1)}%`;
+      document.getElementById('ind-expense-ratio').textContent = `${expenseRatio.toFixed(1)}%`;
+      document.getElementById('ind-fixed-ratio').textContent = `${fixedRatio.toFixed(1)}%`;
+      document.getElementById('ind-top-category').textContent = topCat ? topCat[0] : '—';
+      document.getElementById('ind-top-category-val').textContent = topCat ? formatCurrency(topCat[1]) : 'R$ 0,00';
+
+      // Gerar recomendações
+      const recs = [];
+
+      if (income === 0 && expense === 0) {
+        recs.push({
+          title: 'Sem movimentações no período',
+          text: 'Adicione seus ganhos e despesas na aba "Visão Geral & Lançamentos" para receber diagnósticos personalizados.',
+          tone: 'slate'
+        });
+      } else {
+        if (balance < 0) {
+          recs.push({
+            title: 'Déficit no período detectado',
+            text: `Suas despesas superaram os ganhos em ${formatCurrency(Math.abs(balance))}. Revise gastos variáveis e evite novos parcelamentos.`,
+            tone: 'rose'
+          });
+        } else if (savingsRate >= 20) {
+          recs.push({
+            title: 'Excelente capacidade de poupança',
+            text: `Você está economizando ${savingsRate.toFixed(1)}% da sua renda (${formatCurrency(balance)}). Considere direcionar parte desse saldo para reserva de emergência ou investimentos.`,
+            tone: 'emerald'
+          });
+        } else {
+          recs.push({
+            title: 'Oportunidade de aumentar a margem',
+            text: `Sua taxa de economia está em ${savingsRate.toFixed(1)}%. Tentar reduzir 10% nos gastos variáveis pode liberar ${formatCurrency(expense * 0.10)} no período.`,
+            tone: 'amber'
+          });
+        }
+
+        if (fixedRatio > 55) {
+          recs.push({
+            title: 'Peso elevado de despesas fixas',
+            text: `Despesas recorrentes representam ${fixedRatio.toFixed(1)}% do total gasto. Avalie renegociação de contratos, moradia ou assinaturas recorrentes.`,
+            tone: 'amber'
+          });
+        }
+
+        if (topCat && expense > 0) {
+          const share = ((topCat[1] / expense) * 100).toFixed(1);
+          recs.push({
+            title: `Foco em ${topCat[0]}`,
+            text: `A categoria "${topCat[0]}" concentra ${share}% das despesas (${formatCurrency(topCat[1])}). Defina um teto mensal para manter previsibilidade.`,
+            tone: 'indigo'
+          });
+        }
+
+        const totalGoal = currentGoals.reduce((acc, g) => acc + Number(g.target_amount), 0);
+        if (totalGoal > 0 && balance < totalGoal) {
+          recs.push({
+            title: 'Atenção à meta de economia',
+            text: `Faltam ${formatCurrency(totalGoal - balance)} de saldo positivo para atingir sua meta definida de ${formatCurrency(totalGoal)}.`,
+            tone: 'indigo'
+          });
+        }
+      }
+
+      const toneClasses = {
+        emerald: 'border-emerald-200 bg-emerald-50/50 text-emerald-900',
+        rose: 'border-rose-200 bg-rose-50/50 text-rose-900',
+        amber: 'border-amber-200 bg-amber-50/50 text-amber-900',
+        indigo: 'border-indigo-200 bg-indigo-50/50 text-indigo-900',
+        slate: 'border-slate-200 bg-slate-50 text-slate-800'
       };
 
-      const { error } = await supabaseClient.from('transactions').insert([payload]);
+      document.getElementById('recommendations-list').innerHTML = recs.map(r => `
+        <div class="p-4 rounded-xl border ${toneClasses[r.tone] || toneClasses.slate}">
+          <h3 class="font-bold text-sm mb-1">${r.title}</h3>
+          <p class="text-xs leading-relaxed opacity-90">${r.text}</p>
+        </div>
+      `).join('');
+    }
+
+    // Incrementa data em N meses mantendo o dia (ajustando último dia do mês se necessário)
+    function addMonthsToDateStr(dateStr, monthsToAdd) {
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const targetMonthIndex = (m - 1) + monthsToAdd;
+      const targetYear = y + Math.floor(targetMonthIndex / 12);
+      const targetMonth = ((targetMonthIndex % 12) + 12) % 12; // 0-11
+      const lastDayOfTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+      const safeDay = Math.min(d, lastDayOfTargetMonth);
+
+      const mm = String(targetMonth + 1).padStart(2, '0');
+      const dd = String(safeDay).padStart(2, '0');
+      return `${targetYear}-${mm}-${dd}`;
+    }
+
+    // Salvar múltiplas linhas e recorrências
+    document.getElementById('batch-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('save-batch-btn');
+      btn.disabled = true;
+      btn.textContent = 'Salvando...';
+
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      const rows = Array.from(document.querySelectorAll('#batch-rows > div'));
+      const recordsToInsert = [];
+
+      rows.forEach(row => {
+        const desc = row.querySelector('.row-desc').value.trim();
+        const amount = parseFloat(row.querySelector('.row-amount').value);
+        const type = row.querySelector('.row-type').value;
+        const category = row.querySelector('.row-category').value;
+        const date = row.querySelector('.row-date').value;
+        const isFixed = row.querySelector('.row-fixed').checked;
+        const monthsCount = isFixed ? Math.max(2, parseInt(row.querySelector('.row-months').value || '12')) : 1;
+
+        const groupId = isFixed ? crypto.randomUUID() : null;
+
+        for (let i = 0; i < monthsCount; i++) {
+          const itemDate = i === 0 ? date : addMonthsToDateStr(date, i);
+          const itemDesc = isFixed ? `${desc} (${i + 1}/${monthsCount})` : desc;
+
+          recordsToInsert.push({
+            user_id: user.id,
+            description: itemDesc,
+            amount,
+            type,
+            category,
+            date: itemDate,
+            recurrence_group: groupId
+          });
+        }
+      });
+
+      const { error } = await supabaseClient.from('transactions').insert(recordsToInsert);
+
+      btn.disabled = false;
+      btn.textContent = 'Salvar Todos os Lançamentos';
+
       if (!error) {
-        document.getElementById('t-desc').value = '';
-        document.getElementById('t-amount').value = '';
+        document.getElementById('batch-rows').innerHTML = '';
+        addBatchRow();
         loadData();
       } else {
-        alert('Erro ao salvar lançamento: ' + error.message);
+        alert('Erro ao salvar lançamentos: ' + error.message);
       }
     });
 
-    // Excluir Transação
     async function deleteTransaction(id) {
       if (!confirm('Deseja realmente excluir este lançamento?')) return;
       const { error } = await supabaseClient.from('transactions').delete().eq('id', id);
       if (!error) loadData();
     }
 
-    // Salvar ou Atualizar Meta Mensal (Upsert)
     document.getElementById('goal-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const { data: { user } } = await supabaseClient.auth.getUser();
